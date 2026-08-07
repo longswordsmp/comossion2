@@ -303,13 +303,13 @@ def make_mc_heart():
         "...kk...kk...",
         "..krrk.krrk..",
         ".krrrrdrrrrk.",
-        "krrrrdddrrrrk",
+        "krrrdddddrrrk",
         "krrrdddddrrrk",
         ".krrrrdrrrrk.",
         "..krrrdrrrk..",
         "...krrdrrk...",
-        "....krrrk....",
-        ".....krk.....",
+        "....krdrk....",
+        ".....kdk.....",
         "......k......",
     ]
     cmap = {".": None, "k": K, "r": R, "d": D, "h": H}

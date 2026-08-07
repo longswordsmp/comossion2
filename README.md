@@ -67,6 +67,12 @@ Every command has a GUI: **Manage Lives** (pick player → pick a life count),
 lives → click to manage one), and **Reload**. All menus paginate and have back
 buttons.
 
+**Editing recipes in-game:** open **Recipes** (or `/nlrecipes`) and, as an admin,
+click **Edit Book recipe** / **Edit Gem recipe**. Drop items into the 3×3 grid to
+set the crafting shape, then click **Save** — the recipe is written to
+`recipes.yml` and registered instantly (no restart), and a toggle enables/disables
+it. Your items are handed back when you close the editor.
+
 ## Permissions
 
 | Permission | Default | Grants |

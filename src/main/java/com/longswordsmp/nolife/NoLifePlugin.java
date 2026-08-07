@@ -81,6 +81,12 @@ public final class NoLifePlugin extends JavaPlugin {
         }
     }
 
+    /** Re-read recipes and re-register the crafting recipes (used by the editor). */
+    public void reloadRecipesAndItems() {
+        config.reload();
+        itemManager.reloadRecipes();
+    }
+
     /** Reload config.yml, messages.yml, recipes.yml and the resource pack. */
     public void reloadAll() {
         config.reload();

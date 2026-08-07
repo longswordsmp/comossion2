@@ -2,14 +2,18 @@ package com.longswordsmp.nolife.gui;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -283,7 +287,138 @@ public final class Guis {
         menu.fill(filler());
         placeRecipe(menu, 0, plugin.config().bookRecipe(), plugin.items().createBookOfLife(1), "&6&lBook of Life");
         placeRecipe(menu, 3, plugin.config().gemRecipe(), plugin.items().createLifeGem(1), "&c&lLife Gem");
+        if (viewer.hasPermission("nolife.admin")) {
+            menu.button(45, icon(Material.CRAFTING_TABLE, "&e&lEdit Book recipe", "&7Customize the crafting recipe"),
+                    (v, e) -> open(plugin, () -> openRecipeEditor(plugin, v, "book-of-life")));
+            menu.button(53, icon(Material.CRAFTING_TABLE, "&e&lEdit Gem recipe", "&7Customize the crafting recipe"),
+                    (v, e) -> open(plugin, () -> openRecipeEditor(plugin, v, "life-gem")));
+        }
         menu.open(viewer);
+    }
+
+    // =====================================================================
+    //  Recipe editor (admin) - place items in the grid to define a recipe
+    // =====================================================================
+
+    public static final int[] EDITOR_GRID = {12, 13, 14, 21, 22, 23, 30, 31, 32};
+    public static final int EDITOR_SAVE = 48;
+    public static final int EDITOR_TOGGLE = 49;
+    public static final int EDITOR_CLEAR = 50;
+    public static final int EDITOR_BACK = 45;
+
+    public static void openRecipeEditor(NoLifePlugin plugin, Player admin, String key) {
+        Set<Integer> editable = new LinkedHashSet<>();
+        for (int s : EDITOR_GRID) {
+            editable.add(s);
+        }
+        RecipeEditorHolder holder = new RecipeEditorHolder(key, editable);
+        String label = key.equals("book-of-life") ? "Book of Life" : "Life Gem";
+        Inventory inv = Bukkit.createInventory(holder, 54, title("&8Edit recipe: &f" + label));
+        holder.setInventory(inv);
+
+        ItemStack f = filler();
+        for (int i = 0; i < 54; i++) {
+            if (!editable.contains(i)) {
+                inv.setItem(i, f);
+            }
+        }
+        inv.setItem(4, icon(Material.PAPER, "&e&lRecipe Editor",
+                "&7Place items in the 3x3 grid to set the",
+                "&7crafting shape, then click &aSave&7.",
+                "&8Your items are returned when you close."));
+        inv.setItem(24, icon(Material.ARROW, "&7crafts"));
+        ItemStack result = key.equals("book-of-life")
+                ? plugin.items().createBookOfLife(1) : plugin.items().createLifeGem(1);
+        inv.setItem(25, result);
+
+        RecipeConfig cur = key.equals("book-of-life") ? plugin.config().bookRecipe() : plugin.config().gemRecipe();
+        inv.setItem(EDITOR_SAVE, icon(Material.LIME_STAINED_GLASS_PANE, "&a&lSAVE", "&7Register this recipe"));
+        inv.setItem(EDITOR_TOGGLE, toggleIcon(cur.enabled()));
+        inv.setItem(EDITOR_CLEAR, icon(Material.BARRIER, "&cClear grid"));
+        inv.setItem(EDITOR_BACK, icon(Material.ARROW, "&cBack"));
+
+        admin.openInventory(inv);
+    }
+
+    /** Handle a click on a non-editable (button) slot in the recipe editor. */
+    public static void handleEditorButton(NoLifePlugin plugin, Player p, RecipeEditorHolder ed, int slot) {
+        Inventory inv = ed.getInventory();
+        if (inv == null) {
+            return;
+        }
+        if (slot == EDITOR_SAVE) {
+            saveRecipe(plugin, p, ed);
+        } else if (slot == EDITOR_CLEAR) {
+            for (int s : ed.editableSlots()) {
+                inv.setItem(s, null);
+            }
+        } else if (slot == EDITOR_TOGGLE) {
+            RecipeConfig cur = ed.getRecipeKey().equals("book-of-life")
+                    ? plugin.config().bookRecipe() : plugin.config().gemRecipe();
+            boolean now = !cur.enabled();
+            plugin.config().setRecipeEnabled(ed.getRecipeKey(), now);
+            plugin.reloadRecipesAndItems();
+            inv.setItem(EDITOR_TOGGLE, toggleIcon(now));
+            p.sendMessage(Text.parse(now ? "&aRecipe enabled." : "&cRecipe disabled."));
+        } else if (slot == EDITOR_BACK) {
+            open(plugin, () -> openRecipes(plugin, p));
+        }
+    }
+
+    private static void saveRecipe(NoLifePlugin plugin, Player p, RecipeEditorHolder ed) {
+        Inventory inv = ed.getInventory();
+        Map<String, Character> matToChar = new LinkedHashMap<>();
+        Map<Character, String> ingredients = new LinkedHashMap<>();
+        char next = 'A';
+        List<String> shape = new ArrayList<>();
+        boolean any = false;
+        for (int r = 0; r < 3; r++) {
+            StringBuilder sb = new StringBuilder();
+            for (int c = 0; c < 3; c++) {
+                ItemStack it = inv.getItem(EDITOR_GRID[r * 3 + c]);
+                if (it == null || it.getType() == Material.AIR) {
+                    sb.append(' ');
+                } else {
+                    String mat = it.getType().name();
+                    Character ch = matToChar.get(mat);
+                    if (ch == null) {
+                        ch = next++;
+                        matToChar.put(mat, ch);
+                        ingredients.put(ch, mat);
+                    }
+                    sb.append(ch);
+                    any = true;
+                }
+            }
+            shape.add(sb.toString());
+        }
+        if (!any) {
+            p.sendMessage(Text.parse("&cPlace at least one item in the grid first."));
+            return;
+        }
+        plugin.config().writeRecipe(ed.getRecipeKey(), shape, ingredients, true);
+        plugin.reloadRecipesAndItems();
+        p.sendMessage(Text.parse("&aRecipe saved and registered. Try crafting it!"));
+    }
+
+    /** Return any items left in the editor's grid to the player (on close). */
+    public static void returnEditorItems(NoLifePlugin plugin, Player p, RecipeEditorHolder ed) {
+        Inventory inv = ed.getInventory();
+        if (inv == null) {
+            return;
+        }
+        for (int s : ed.editableSlots()) {
+            ItemStack it = inv.getItem(s);
+            if (it != null && it.getType() != Material.AIR) {
+                plugin.items().give(p, it);
+                inv.setItem(s, null);
+            }
+        }
+    }
+
+    private static ItemStack toggleIcon(boolean enabled) {
+        return icon(enabled ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE,
+                enabled ? "&aRecipe: ENABLED" : "&cRecipe: DISABLED", "&7Click to toggle");
     }
 
     private static void placeRecipe(Menu menu, int rowStart, RecipeConfig def, ItemStack result, String label) {

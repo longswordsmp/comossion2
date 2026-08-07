@@ -197,6 +197,35 @@ public class PluginConfig {
         return new RecipeConfig(enabled, shape, ingredients);
     }
 
+    /** Persist a recipe (shape + ingredients + enabled) to recipes.yml. */
+    public void writeRecipe(String key, List<String> shape, Map<Character, String> ingredients, boolean enabled) {
+        FileConfiguration yaml = YamlConfiguration.loadConfiguration(recipesFile);
+        yaml.set(key + ".enabled", enabled);
+        yaml.set(key + ".shape", shape);
+        yaml.set(key + ".ingredients", null);
+        for (Map.Entry<Character, String> e : ingredients.entrySet()) {
+            yaml.set(key + ".ingredients." + e.getKey(), e.getValue());
+        }
+        saveRecipes(yaml);
+        reload();
+    }
+
+    /** Flip just the enabled flag for a recipe in recipes.yml. */
+    public void setRecipeEnabled(String key, boolean enabled) {
+        FileConfiguration yaml = YamlConfiguration.loadConfiguration(recipesFile);
+        yaml.set(key + ".enabled", enabled);
+        saveRecipes(yaml);
+        reload();
+    }
+
+    private void saveRecipes(FileConfiguration yaml) {
+        try {
+            yaml.save(recipesFile);
+        } catch (IOException e) {
+            plugin.getLogger().warning("Could not save recipes.yml: " + e.getMessage());
+        }
+    }
+
     // ---- gui --------------------------------------------------------------
 
     public Component reviveTitle() {
