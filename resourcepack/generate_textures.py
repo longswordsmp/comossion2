@@ -292,6 +292,42 @@ def make_book():
     return px
 
 
-write_png(OUT + "/life_gem.png", make_gem())
+def make_mc_heart():
+    """The classic Minecraft health heart: chunky pixels, black outline,
+    bright red body, dark-maroon interior cross."""
+    K = (0, 0, 0)
+    R = (228, 26, 28)
+    D = (122, 14, 18)
+    H = (255, 120, 120)
+    grid = [
+        "...kk...kk...",
+        "..krrk.krrk..",
+        ".krrrrdrrrrk.",
+        "krrrrdddrrrrk",
+        "krrrdddddrrrk",
+        ".krrrrdrrrrk.",
+        "..krrrdrrrk..",
+        "...krrdrrk...",
+        "....krrrk....",
+        ".....krk.....",
+        "......k......",
+    ]
+    cmap = {".": None, "k": K, "r": R, "d": D, "h": H}
+    px = canvas()
+    scale = 4
+    gw, gh = 13 * scale, len(grid) * scale
+    xoff, yoff = (S - gw) // 2, (S - gh) // 2
+    for gy, row in enumerate(grid):
+        for gx, ch in enumerate(row):
+            c = cmap[ch]
+            if c is None:
+                continue
+            for dy in range(scale):
+                for dx in range(scale):
+                    put(px, xoff + gx * scale + dx, yoff + gy * scale + dy, c)
+    return px
+
+
+write_png(OUT + "/life_gem.png", make_mc_heart())
 write_png(OUT + "/book_of_life.png", make_book())
 print("wrote textures at", S, "x", S)
