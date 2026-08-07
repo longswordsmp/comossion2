@@ -5,23 +5,23 @@ api-version: '1.21'
 authors: [longswordsmp]
 description: A three-life survival plugin with elimination, revives, Book of Life and Life Gems.
 
+# Note: the nolife.admin permission is enforced inside the command handler
+# (so the configurable messages.yml "no-permission" text is shown). It is
+# intentionally not declared here, as Bukkit would otherwise reject the sender
+# with its own generic message before the handler runs.
 commands:
   setlives:
     description: Set a player's lives.
     usage: /setlives <player> <amount>
-    permission: nolife.admin
   revive:
     description: Revive an eliminated player at your location.
     usage: /revive <player>
-    permission: nolife.admin
   eliminate:
     description: Eliminate (death-ban) a player.
     usage: /eliminate <player>
-    permission: nolife.admin
   nlreload:
     description: Reload the NoLife config and resend the resource pack.
     usage: /nlreload
-    permission: nolife.admin
 
 permissions:
   nolife.admin:

@@ -196,6 +196,7 @@ public class LivesManager {
     /** Death-ban a player, optionally broadcasting, and kick them if online. */
     public void eliminate(UUID uuid, String nameHint, boolean announce) {
         PlayerData d = getOrCreate(uuid, nameHint);
+        boolean already = d.isEliminated();
         d.setEliminated(true);
         d.setLives(0);
         String name = d.getName();
@@ -203,12 +204,14 @@ public class LivesManager {
         Player online = Bukkit.getPlayer(uuid);
         removeFromAllTeams(online != null ? online.getName() : name);
 
-        if (announce) {
+        // Idempotent: don't re-broadcast or double-schedule a kick if the player
+        // was already eliminated (e.g. /setlives 0 on an already-out player).
+        if (announce && !already) {
             broadcast(cfg.msg("broadcast.death", "%player%", name));
         }
         data.save();
 
-        if (online != null) {
+        if (online != null && !already) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 Player o = Bukkit.getPlayer(uuid);
                 // Re-check eliminated so an admin revive during the delay cancels the kick.
@@ -230,7 +233,8 @@ public class LivesManager {
         String name = d.getName();
 
         Player online = Bukkit.getPlayer(uuid);
-        if (online != null) {
+        if (online != null && !online.isDead()) {
+            // Alive and online: bring them over right now.
             if (loc != null) {
                 online.teleport(loc);
             }
@@ -239,6 +243,11 @@ public class LivesManager {
             playReviveEffects(online);
             data.removePending(uuid);
         } else if (loc != null) {
+            // Offline, or online but still dead on the death screen (revived
+            // inside the kick-delay window). Defer: the location is applied on
+            // respawn (ConnectionListener#onRespawn) or on the next join
+            // (applyPendingRevive), whichever happens first. Teleporting a dead
+            // player here would just be overwritten when they click respawn.
             data.putPending(uuid, PendingRevive.of(loc));
         }
 

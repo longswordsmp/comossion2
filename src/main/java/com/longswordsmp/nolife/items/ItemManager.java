@@ -72,6 +72,15 @@ public class ItemManager {
         }
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            // Some materials (e.g. AIR) have no ItemMeta; fall back so we never NPE.
+            plugin.getLogger().warning("Material '" + material + "' has no item meta, using " + fallback);
+            item = new ItemStack(fallback);
+            meta = item.getItemMeta();
+            if (meta == null) {
+                return item;
+            }
+        }
 
         meta.displayName(Text.item(name));
 
@@ -153,28 +162,34 @@ public class ItemManager {
             }
         }
 
-        ShapedRecipe recipe = new ShapedRecipe(key, result);
-        recipe.shape(shape.toArray(new String[0]));
-
-        for (Map.Entry<Character, String> entry : def.ingredients().entrySet()) {
-            char symbol = entry.getKey();
-            if (!shapeChars.contains(symbol)) {
-                continue; // ingredient not used by this shape
-            }
-            Material material = Material.matchMaterial(entry.getValue());
-            if (material == null) {
-                plugin.getLogger().warning("Unknown material '" + entry.getValue()
-                        + "' for symbol '" + symbol + "' in recipe " + key.getKey());
-                continue;
-            }
-            recipe.setIngredient(symbol, material);
-        }
-
+        // Everything that can throw on a malformed recipes.yml (uneven/oversized
+        // shape rows, a null ingredient material, a symbol with no ingredient)
+        // is wrapped here so one bad recipe only skips itself instead of aborting
+        // the whole registration / reload.
         try {
+            ShapedRecipe recipe = new ShapedRecipe(key, result);
+            recipe.shape(shape.toArray(new String[0]));
+
+            for (Map.Entry<Character, String> entry : def.ingredients().entrySet()) {
+                char symbol = entry.getKey();
+                if (!shapeChars.contains(symbol)) {
+                    continue; // ingredient not used by this shape
+                }
+                String materialName = entry.getValue();
+                Material material = materialName == null ? null : Material.matchMaterial(materialName);
+                if (material == null) {
+                    plugin.getLogger().warning("Unknown material '" + materialName
+                            + "' for symbol '" + symbol + "' in recipe " + key.getKey());
+                    continue;
+                }
+                recipe.setIngredient(symbol, material);
+            }
+
             Bukkit.addRecipe(recipe);
-        } catch (IllegalStateException | IllegalArgumentException ex) {
+        } catch (Throwable ex) {
             plugin.getLogger().warning("Could not register recipe " + key.getKey()
-                    + " (check that every shape symbol has an ingredient): " + ex.getMessage());
+                    + " (check the shape rows are 1-3 wide and every symbol has an ingredient): "
+                    + ex.getMessage());
         }
     }
 

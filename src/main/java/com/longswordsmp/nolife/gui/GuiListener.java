@@ -35,11 +35,24 @@ public class GuiListener implements Listener {
             if (event.getClickedInventory() != top) {
                 return;
             }
-            UUID target = revive.slots().get(event.getRawSlot());
+            Player viewer = (Player) event.getWhoClicked();
+            int slot = event.getRawSlot();
+
+            if (slot == revive.getPrevSlot()) {
+                int target = revive.getPage() - 1;
+                Bukkit.getScheduler().runTask(plugin, () -> Menus.openReviveMenu(plugin, viewer, target));
+                return;
+            }
+            if (slot == revive.getNextSlot()) {
+                int target = revive.getPage() + 1;
+                Bukkit.getScheduler().runTask(plugin, () -> Menus.openReviveMenu(plugin, viewer, target));
+                return;
+            }
+
+            UUID target = revive.slots().get(slot);
             if (target == null) {
                 return;
             }
-            Player viewer = (Player) event.getWhoClicked();
             String name = nameOf(target);
             Bukkit.getScheduler().runTask(plugin,
                     () -> Menus.openConfirmMenu(plugin, viewer, target, name));

@@ -29,31 +29,73 @@ public final class Menus {
     public static final int CANCEL_SLOT = 15;
     public static final int HEAD_SLOT = 13;
 
+    private static final int PER_PAGE = 45; // 5 rows of heads, 6th row for nav
+
     private Menus() {
     }
 
-    /** Open the list of eliminated players for {@code viewer}. */
+    /** Open the first page of the eliminated-players list for {@code viewer}. */
     public static void openReviveMenu(NoLifePlugin plugin, Player viewer) {
+        openReviveMenu(plugin, viewer, 0);
+    }
+
+    /** Open the given page of the eliminated-players list for {@code viewer}. */
+    public static void openReviveMenu(NoLifePlugin plugin, Player viewer, int page) {
         List<PlayerData> eliminated = plugin.lives().getEliminatedSorted();
         if (eliminated.isEmpty()) {
             viewer.sendMessage(plugin.config().msg("no-eliminated"));
             return;
         }
 
-        int rows = Math.min(6, Math.max(1, (eliminated.size() + 8) / 9));
-        int size = rows * 9;
+        int totalPages = (eliminated.size() + PER_PAGE - 1) / PER_PAGE;
+        if (page < 0) {
+            page = 0;
+        }
+        if (page >= totalPages) {
+            page = totalPages - 1;
+        }
+
+        boolean paged = totalPages > 1;
+        int start = page * PER_PAGE;
+        int end = Math.min(start + PER_PAGE, eliminated.size());
+        int count = end - start;
+
+        int size;
+        if (paged) {
+            size = 54; // 45 heads + a navigation row
+        } else {
+            int rows = Math.min(5, Math.max(1, (count + 8) / 9));
+            size = rows * 9;
+        }
 
         ReviveMenuHolder holder = new ReviveMenuHolder();
+        holder.setPage(page);
         Inventory inv = Bukkit.createInventory(holder, size, plugin.config().reviveTitle());
         holder.setInventory(inv);
 
-        int shown = Math.min(eliminated.size(), size);
-        for (int i = 0; i < shown; i++) {
-            PlayerData data = eliminated.get(i);
+        for (int i = 0; i < count; i++) {
+            PlayerData data = eliminated.get(start + i);
             inv.setItem(i, playerHead(data.getUuid(), data.getName(),
                     "&e" + data.getName(),
                     List.of("&7Eliminated", "&aClick to select")));
             holder.slots().put(i, data.getUuid());
+        }
+
+        if (paged) {
+            ItemStack filler = pane(Material.GRAY_STAINED_GLASS_PANE, " ");
+            for (int s = size - 9; s < size; s++) {
+                inv.setItem(s, filler);
+            }
+            inv.setItem(size - 5, pane(Material.GRAY_STAINED_GLASS_PANE,
+                    "&7Page &f" + (page + 1) + "&7/&f" + totalPages));
+            if (page > 0) {
+                inv.setItem(size - 9, pane(Material.LIME_STAINED_GLASS_PANE, "&a◀ Previous"));
+                holder.setPrevSlot(size - 9);
+            }
+            if (page < totalPages - 1) {
+                inv.setItem(size - 1, pane(Material.LIME_STAINED_GLASS_PANE, "&aNext ▶"));
+                holder.setNextSlot(size - 1);
+            }
         }
 
         viewer.openInventory(inv);

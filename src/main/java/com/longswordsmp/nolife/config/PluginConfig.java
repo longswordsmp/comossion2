@@ -1,6 +1,9 @@
 package com.longswordsmp.nolife.config;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,6 +35,11 @@ public class PluginConfig {
     private FileConfiguration messages;
     private FileConfiguration recipes;
 
+    // Bundled jar copies, used as a fallback when the on-disk file is missing a
+    // key (e.g. an upgrade that adds new messages/recipes).
+    private FileConfiguration messagesDefaults;
+    private FileConfiguration recipesDefaults;
+
     public PluginConfig(JavaPlugin plugin) {
         this.plugin = plugin;
         this.messagesFile = new File(plugin.getDataFolder(), "messages.yml");
@@ -49,6 +57,16 @@ public class PluginConfig {
         this.config = plugin.getConfig();
         this.messages = YamlConfiguration.loadConfiguration(messagesFile);
         this.recipes = YamlConfiguration.loadConfiguration(recipesFile);
+        this.messagesDefaults = loadJarDefaults("messages.yml");
+        this.recipesDefaults = loadJarDefaults("recipes.yml");
+    }
+
+    private FileConfiguration loadJarDefaults(String resource) {
+        InputStream in = plugin.getResource(resource);
+        if (in == null) {
+            return null;
+        }
+        return YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
     }
 
     private void saveIfAbsent(String resource, File target) {
@@ -153,6 +171,9 @@ public class PluginConfig {
 
     private RecipeConfig recipe(String path) {
         ConfigurationSection section = recipes.getConfigurationSection(path);
+        if (section == null && recipesDefaults != null) {
+            section = recipesDefaults.getConfigurationSection(path);
+        }
         if (section == null) {
             return new RecipeConfig(false, new ArrayList<>(), new LinkedHashMap<>());
         }
@@ -215,7 +236,11 @@ public class PluginConfig {
 
     /** Raw (un-parsed) message string for a dotted key in messages.yml. */
     public String raw(String key) {
-        return messages.getString(key, "");
+        String value = messages.getString(key);
+        if (value == null && messagesDefaults != null) {
+            value = messagesDefaults.getString(key);
+        }
+        return value != null ? value : "";
     }
 
     /**

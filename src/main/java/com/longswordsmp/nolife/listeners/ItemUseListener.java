@@ -39,8 +39,20 @@ public class ItemUseListener implements Listener {
         Player player = event.getPlayer();
         ItemStack hand = player.getInventory().getItemInMainHand();
 
-        if (plugin.items().isBookOfLife(hand)) {
-            event.setCancelled(true);
+        boolean isBook = plugin.items().isBookOfLife(hand);
+        boolean isGem = plugin.items().isLifeGem(hand);
+        if (!isBook && !isGem) {
+            return;
+        }
+        event.setCancelled(true);
+
+        // An eliminated player (e.g. within the kick-delay window) must not be
+        // able to use a Life Gem to self-revive or a Book to revive others.
+        if (plugin.lives().isEliminated(player.getUniqueId())) {
+            return;
+        }
+
+        if (isBook) {
             if (!player.hasPermission("nolife.use.book")) {
                 player.sendMessage(plugin.config().msg("no-permission"));
                 return;
@@ -49,14 +61,12 @@ public class ItemUseListener implements Listener {
             return;
         }
 
-        if (plugin.items().isLifeGem(hand)) {
-            event.setCancelled(true);
-            if (!player.hasPermission("nolife.use.lifegem")) {
-                player.sendMessage(plugin.config().msg("no-permission"));
-                return;
-            }
-            useLifeGem(player, hand);
+        // isGem
+        if (!player.hasPermission("nolife.use.lifegem")) {
+            player.sendMessage(plugin.config().msg("no-permission"));
+            return;
         }
+        useLifeGem(player, hand);
     }
 
     private void useLifeGem(Player player, ItemStack hand) {
