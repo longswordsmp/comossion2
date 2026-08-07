@@ -151,8 +151,9 @@ server's `plugins/` folder and start the server (Java 21+ required).
 ## Resource pack
 
 A ready-made pack lives in [`resourcepack/`](resourcepack/) and gives the Book
-of Life and Life Gem custom textures (a gold book with a red life-cross, and a
-red gem). It ships with **both** model systems so it works across 1.21.x:
+of Life and Life Gem detailed **64×64** custom textures (a gold-trimmed crimson
+tome with a glowing heart, and a faceted heart-cut ruby). It ships with **both**
+model systems so it works across 1.21.x:
 
 - legacy `custom_model_data` overrides (`models/item/*.json`) for ≤ 1.21.3, and
 - the new item model definitions (`items/*.json`, `range_dispatch`) for ≥ 1.21.4.

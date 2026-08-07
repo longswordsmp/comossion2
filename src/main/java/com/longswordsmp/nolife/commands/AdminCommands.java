@@ -350,6 +350,19 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
                 names.add(data.getName());
             }
         }
+        return matching(names, prefix);
+    }
+
+    /** Only currently-online player names (used where offline targets are rejected). */
+    private List<String> onlineNames(String prefix) {
+        TreeSet<String> names = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            names.add(player.getName());
+        }
+        return matching(names, prefix);
+    }
+
+    private List<String> matching(TreeSet<String> names, String prefix) {
         List<String> out = new ArrayList<>();
         for (String candidate : names) {
             if (candidate.toLowerCase(Locale.ROOT).startsWith(prefix)) {
@@ -381,7 +394,8 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
 
         if (name.equals("nlgive")) {
             if (args.length == 1) {
-                List<String> out = onlineAndTrackedNames(args[0].toLowerCase(Locale.ROOT));
+                // /nlgive only accepts online targets, so suggest online names only.
+                List<String> out = onlineNames(args[0].toLowerCase(Locale.ROOT));
                 for (String k : ITEM_KEYWORDS) {
                     if (k.startsWith(args[0].toLowerCase(Locale.ROOT))) {
                         out.add(k);

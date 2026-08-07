@@ -111,14 +111,23 @@ public final class Guis {
         boolean elim = plugin.lives().isEliminated(id);
         int current = elim ? 0 : plugin.lives().getLivesOrDefault(id);
 
-        Menu menu = new Menu(title("&8Lives: &f" + name), 3);
+        int count = max + 1;                              // buttons 0..max
+        int perRow = 7;
+        int gridRows = Math.max(1, (count + perRow - 1) / perRow);
+        int rows = Math.min(6, 1 + gridRows + 1);         // header + grid + back row
+
+        Menu menu = new Menu(title("&8Lives: &f" + name), rows);
         menu.fill(filler());
         menu.set(4, head(id, name, "&e" + name,
                 List.of(elim ? "&cELIMINATED" : "&7Current: &f" + current)));
 
-        int slot = 10;
+        int backRowStart = menu.size() - 9;
         for (int n = 0; n <= max; n++) {
             final int val = n;
+            int slot = (1 + n / perRow) * 9 + 1 + (n % perRow);
+            if (slot >= backRowStart) {
+                break; // never spill into the back row (extreme max-lives)
+            }
             ItemStack it;
             if (n == 0) {
                 it = icon(Material.BARRIER, "&c&lEliminate", "&7Set to 0 lives (death-ban)");
@@ -129,7 +138,7 @@ public final class Guis {
                 it = icon(pane, "&fSet to &e" + n + "&f lives");
                 it.setAmount(Math.max(1, Math.min(64, n)));
             }
-            menu.button(slot++, it, (v, e) -> {
+            menu.button(slot, it, (v, e) -> {
                 if (val <= 0) {
                     plugin.lives().eliminate(id, name, true);
                     v.sendMessage(plugin.config().msg("eliminate-done", "%player%", name));
@@ -144,7 +153,7 @@ public final class Guis {
                 open(plugin, () -> openAmountSelector(plugin, v, id, name));
             });
         }
-        menu.button(22, icon(Material.ARROW, "&cBack"),
+        menu.button(menu.size() - 5, icon(Material.ARROW, "&cBack"),
                 (v, e) -> open(plugin, () -> openPlayerPicker(plugin, v, "&8Manage Lives", 0,
                         (i2, n2) -> openAmountSelector(plugin, v, i2, n2), () -> openAdminHub(plugin, v))));
         menu.open(admin);
@@ -361,15 +370,22 @@ public final class Guis {
         boolean elim = plugin.lives().isEliminated(id);
         int lives = elim ? 0 : plugin.lives().getLivesOrDefault(id);
 
-        Menu menu = new Menu(title("&8" + name + "'s Lives"), 3);
+        int heartRows = Math.max(1, (max + 8) / 9);
+        int rows = Math.min(6, 1 + heartRows);            // header + heart rows
+
+        Menu menu = new Menu(title("&8" + name + "'s Lives"), rows);
         menu.fill(filler());
         menu.set(4, head(id, name, "&e" + name,
                 List.of(elim ? "&cELIMINATED" : "&aLives: &f" + lives + "&7/" + max)));
 
-        int startSlot = 9 + Math.max(0, (9 - max) / 2);
         for (int i = 0; i < max; i++) {
+            int col = (max <= 9) ? (9 - max) / 2 + (i % 9) : (i % 9);
+            int slot = (1 + i / 9) * 9 + col;
+            if (slot >= menu.size()) {
+                break;
+            }
             boolean filledHeart = i < lives;
-            menu.set(startSlot + i, icon(filledHeart ? Material.RED_DYE : Material.GRAY_DYE,
+            menu.set(slot, icon(filledHeart ? Material.RED_DYE : Material.GRAY_DYE,
                     filledHeart ? "&c❤ Life" : "&8♡ Lost"));
         }
         menu.open(viewer);
