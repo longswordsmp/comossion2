@@ -49,10 +49,14 @@ public final class NoLifePlugin extends JavaPlugin {
         pm.registerEvents(new GuiListener(this), this);
 
         AdminCommands admin = new AdminCommands(this);
+        bind("nolife", admin);
         bind("setlives", admin);
         bind("revive", admin);
         bind("eliminate", admin);
+        bind("nlgive", admin);
         bind("nlreload", admin);
+        bind("lives", admin);
+        bind("nlrecipes", admin);
 
         // Handle players already online (e.g. after /reload).
         livesManager.refreshOnlineDisplays();

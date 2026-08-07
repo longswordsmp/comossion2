@@ -18,9 +18,12 @@ life-lost: "&cYou lost a life! &7You have &e%lives%&7 lives remaining."
 ban-kick: "&c&lYou have been eliminated.\n\n&7You used your last life.\n&7Someone must craft a &6Book of Life&7 to revive you."
 
 no-permission: "&cYou don't have permission to do that."
+players-only: "&cOnly players can open that menu."
 usage-setlives: "&cUsage: &7/setlives <player> <amount>"
 usage-revive: "&cUsage: &7/revive <player>"
 usage-eliminate: "&cUsage: &7/eliminate <player>"
+usage-nlgive: "&cUsage: &7/nlgive [player] <book|gem> [amount]"
+usage-lives: "&cUsage: &7/lives [player]"
 
 # %player%
 unknown-player: "&cUnknown player &7%player%&c. They must be online or have joined before."
@@ -48,6 +51,17 @@ eliminate-already: "&e%player% is already eliminated."
 revive-done: "&aRevived &f%player%&a."
 # %player%
 revive-not-eliminated: "&e%player% is not eliminated."
+
+# %amount% %item%
+give-received: "&aYou received &e%amount%x %item%&a."
+# %player% %amount% %item%
+give-sent: "&aGave &e%amount%x %item%&a to &f%player%&a."
+# %player%
+give-offline: "&c%player% must be online to receive items."
+# %item%
+give-unknown-item: "&cUnknown item &7%item%&c. Use &fbook &cor &fgem&c."
+# %player% %lives% %max%
+lives-text: "&f%player%&7 has &e%lives%&7/&e%max%&7 lives."
 
 # %version%
 reloaded: "&aNoLife configuration reloaded. &7(resource pack v%version%)"

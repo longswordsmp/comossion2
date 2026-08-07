@@ -5,11 +5,15 @@ api-version: '1.21'
 authors: [longswordsmp]
 description: A three-life survival plugin with elimination, revives, Book of Life and Life Gems.
 
-# Note: the nolife.admin permission is enforced inside the command handler
-# (so the configurable messages.yml "no-permission" text is shown). It is
-# intentionally not declared here, as Bukkit would otherwise reject the sender
-# with its own generic message before the handler runs.
+# Note: permissions are enforced inside the command handlers (so the
+# configurable messages.yml "no-permission" text is shown). They are
+# intentionally not declared per-command here, as Bukkit would otherwise reject
+# the sender with its own generic message before the handler runs.
 commands:
+  nolife:
+    description: Open the NoLife admin menu.
+    usage: /nolife
+    aliases: [nl]
   setlives:
     description: Set a player's lives.
     usage: /setlives <player> <amount>
@@ -19,9 +23,19 @@ commands:
   eliminate:
     description: Eliminate (death-ban) a player.
     usage: /eliminate <player>
+  nlgive:
+    description: Give a Book of Life or Life Gem.
+    usage: /nlgive [player] <book|gem> [amount]
   nlreload:
     description: Reload the NoLife config and resend the resource pack.
     usage: /nlreload
+  lives:
+    description: Show your (or another player's) lives.
+    usage: /lives [player]
+  nlrecipes:
+    description: Show the Book of Life and Life Gem recipes.
+    usage: /nlrecipes
+    aliases: [nlrecipe]
 
 permissions:
   nolife.admin:
@@ -32,4 +46,10 @@ permissions:
     default: true
   nolife.use.lifegem:
     description: Allows using a Life Gem to gain a life.
+    default: true
+  nolife.lives:
+    description: Allows using /lives to view your own life count.
+    default: true
+  nolife.recipes:
+    description: Allows using /nlrecipes to view the crafting recipes.
     default: true

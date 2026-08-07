@@ -38,22 +38,44 @@ entry:
 
 ## Commands
 
-All admin commands require the `nolife.admin` permission (default: OP).
+Admin commands require `nolife.admin` (default: OP). `/lives` and `/nlrecipes`
+are available to everyone.
 
 | Command | Description |
 |---------|-------------|
+| `/nolife` (`/nl`) | Open the **admin menu** — a GUI hub linking to every action below. |
 | `/setlives <player> <amount>` | Set a player's lives (0 = eliminate). |
 | `/revive <player>` | Remove the death-ban and revive the player at your location (2 lives). |
 | `/eliminate <player>` | Immediately death-ban a player. |
+| `/nlgive [player] <book\|gem> [amount]` | Give a Book of Life or Life Gem. Omit the player to give to yourself. |
 | `/nlreload` | Reload `config.yml`, `messages.yml`, `recipes.yml` and re-send the resource pack. |
+| `/lives [player]` | Show your (or, as admin, another player's) lives as a heart display. |
+| `/nlrecipes` | Show the Book of Life and Life Gem crafting recipes in a GUI. |
+
+### Giving yourself a Book of Life
+
+Three ways:
+- **Command:** `/nlgive book` (yourself) or `/nlgive <player> book 3` (someone else, 3 of them). `gem` works the same.
+- **GUI:** `/nolife` → **Give Items** → left-click for yourself, right-click to pick a player.
+- **Craft it:** see `/nlrecipes` (or `/nolife` → **Recipes**).
+
+### The admin menu (`/nolife`)
+
+Every command has a GUI: **Manage Lives** (pick player → pick a life count),
+**Revive Player** (pick from eliminated players → confirm), **Eliminate Player**
+(pick → confirm), **Give Items**, **Recipes**, **Players** (overview of everyone's
+lives → click to manage one), and **Reload**. All menus paginate and have back
+buttons.
 
 ## Permissions
 
 | Permission | Default | Grants |
 |------------|---------|--------|
-| `nolife.admin` | op | All admin commands. |
+| `nolife.admin` | op | All admin commands + the `/nolife` menu. |
 | `nolife.use.book` | true | Using the Book of Life. |
 | `nolife.use.lifegem` | true | Using a Life Gem. |
+| `nolife.lives` | true | `/lives` (own life count). |
+| `nolife.recipes` | true | `/nlrecipes` (recipe viewer). |
 
 ---
 

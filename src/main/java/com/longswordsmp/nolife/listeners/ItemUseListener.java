@@ -11,7 +11,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import com.longswordsmp.nolife.NoLifePlugin;
-import com.longswordsmp.nolife.gui.Menus;
+import com.longswordsmp.nolife.gui.Guis;
 
 /**
  * Right-click behaviour for the custom items:
@@ -57,7 +57,7 @@ public class ItemUseListener implements Listener {
                 player.sendMessage(plugin.config().msg("no-permission"));
                 return;
             }
-            Menus.openReviveMenu(plugin, player);
+            Guis.openReviveList(plugin, player, false, 0);
             return;
         }
 

@@ -195,6 +195,14 @@ public class ItemManager {
 
     // ---- consumption ------------------------------------------------------
 
+    /** Give an item to a player, dropping any overflow at their feet. */
+    public void give(Player player, ItemStack item) {
+        Map<Integer, ItemStack> leftover = player.getInventory().addItem(item);
+        for (ItemStack extra : leftover.values()) {
+            player.getWorld().dropItemNaturally(player.getLocation(), extra);
+        }
+    }
+
     /** Remove one Book of Life from a player's inventory. Returns true if found. */
     public boolean consumeOneBookOfLife(Player player) {
         PlayerInventory inv = player.getInventory();
