@@ -1,6 +1,7 @@
 package com.longswordsmp.nolife.config;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -66,7 +67,11 @@ public class PluginConfig {
         if (in == null) {
             return null;
         }
-        return YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
+        try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+            return YamlConfiguration.loadConfiguration(reader);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     private void saveIfAbsent(String resource, File target) {

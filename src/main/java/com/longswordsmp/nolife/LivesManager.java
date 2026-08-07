@@ -262,6 +262,13 @@ public class LivesManager {
         if (pending == null) {
             return;
         }
+        if (player.isDead()) {
+            // Still on the death screen (they were kicked or quit before
+            // respawning). Leave the pending in place so ConnectionListener's
+            // respawn handler applies it via setRespawnLocation when they click
+            // respawn; teleporting a dead player here would be lost on respawn.
+            return;
+        }
         data.removePending(uuid);
         data.save();
 
