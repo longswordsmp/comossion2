@@ -237,33 +237,56 @@ def make_book():
             put(px, x, y, ramp(GOLD, 0.6 + 0.3 * ((x + y) % 2)))
     put(px, 52, 30, ramp(GOLD, 1.0))
 
-    # --- heart emblem centered on the cover ---
-    hs, hcx, hcy = 11.5, 30.5, 29.5
+    # --- glowing heart emblem, centred on the cover face ---
+    hs, hcx, hcy = 10.5, 32.5, 32.0
+
+    def hx(xp):
+        return (xp + 0.5 - hcx) / hs
+
+    def hy(yp):
+        return (hcy - (yp + 0.5)) / hs
+
     hearts = set()
-    for yp in range(15, 47):
-        for xp in range(15, 47):
-            x = (xp + 0.5 - hcx) / hs
-            y = (hcy - (yp + 0.5)) / hs
-            if heart_inside(x, y):
+    for yp in range(13, 51):
+        for xp in range(15, 51):
+            if heart_inside(hx(xp), hy(yp)):
                 hearts.add((xp, yp))
-                r = min(1.0, math.hypot(x, y - 0.2) / 1.05)
-                up = max(0.0, y + 0.1)
-                put(px, xp, yp, ramp(GOLD, 0.98 - 0.42 * r + 0.06 * up))
+
+    # soft warm glow halo on the leather around the heart
+    for yp in range(cov[1] + 1, cov[3]):
+        for xp in range(cov[0] + 5, cov[2]):
+            if (xp, yp) in hearts:
+                continue
+            d = math.hypot(hx(xp), hy(yp) - 0.2)
+            if 0.9 < d < 1.85:
+                put(px, xp, yp, lerp(px[yp][xp], (255, 176, 96), (1.85 - d) * 0.5))
+
+    # heart fill: gold with up-left light, snapped to crisp shade bands
+    for (xp, yp) in hearts:
+        x, y = hx(xp), hy(yp)
+        r = min(1.0, math.hypot(x, y - 0.15) / 1.05)
+        light = 0.18 * max(0.0, (-x + y))  # upper-left brighter
+        b = round((0.62 - 0.30 * r + light) * 6) / 6.0
+        put(px, xp, yp, ramp(GOLD, b))
+
     # bright warm core
     for (xp, yp) in hearts:
-        x = (xp + 0.5 - hcx) / hs
-        y = (hcy - (yp + 0.5)) / hs
-        if math.hypot(x, y - 0.05) < 0.33:
-            put(px, xp, yp, lerp(px[yp][xp], (255, 238, 176), 0.55))
-    # dark-gold rim around the heart
+        if math.hypot(hx(xp), hy(yp) - 0.05) < 0.30:
+            put(px, xp, yp, lerp(px[yp][xp], (255, 240, 186), 0.5))
+
+    # crisp dark-gold rim
     for (xp, yp) in list(hearts):
         if ((xp + 1, yp) not in hearts or (xp - 1, yp) not in hearts
                 or (xp, yp + 1) not in hearts or (xp, yp - 1) not in hearts):
-            put(px, xp, yp, ramp(GOLD, 0.26))
-    # top-left sheen sparkle
-    for (dx, dy, c) in [(0, 0, (255, 252, 222)), (1, 0, (255, 246, 202)), (0, 1, (255, 244, 198))]:
-        if (27 + dx, 25 + dy) in hearts:
-            put(px, 27 + dx, 25 + dy, c)
+            put(px, xp, yp, ramp(GOLD, 0.22))
+
+    # a single soft specular glint on the upper-left lobe (not symmetric, so it
+    # reads as a light reflection rather than a pair of eyes)
+    for (dx, dy, c) in [(0, 0, (255, 255, 240)), (1, 0, (255, 251, 220)),
+                        (0, 1, (255, 249, 214)), (1, 1, (255, 247, 210)), (2, 1, (255, 244, 204))]:
+        p = (27 + dx, 25 + dy)
+        if p in hearts:
+            put(px, p[0], p[1], c)
 
     outline(px, (26, 8, 10), 1)
     return px
