@@ -1,0 +1,73 @@
+# ============================================================================
+#  NoLife  -  core configuration
+# ----------------------------------------------------------------------------
+#  Text uses legacy colour codes:  &c &a &e &6 ...  and hex:  &#ff0000
+#  Messages live in messages.yml, crafting recipes in recipes.yml.
+#  All three files (plus the resource pack) are reloaded by /nlreload.
+# ============================================================================
+
+# Lives given to a brand new player.
+starting-lives: 3
+
+# The most lives a player can ever hold (Life Gems will not exceed this).
+max-lives: 3
+
+# Lives a player is given when they are revived (Book of Life or /revive).
+revive-lives: 2
+
+# Ticks (20 = 1 second) to wait after a player loses their last life before
+# they are kicked, so the death screen and broadcast are visible first.
+kick-delay-ticks: 60
+
+# Team colour applied to a player's name-tag AND tab-list entry by life count.
+# Any Minecraft named colour: green, yellow, red, gold, aqua, ...
+colors:
+  three-lives: green
+  two-lives: yellow
+  one-life: red
+
+# ----------------------------------------------------------------------------
+# Custom item appearance. Crafting shapes are defined in recipes.yml.
+# ----------------------------------------------------------------------------
+items:
+  book-of-life:
+    material: BOOK
+    name: "&6&lBook of Life"
+    lore:
+      - "&7Right-click to open the list of"
+      - "&7eliminated players and bring"
+      - "&7one of them back to life."
+    # Optional resource-pack model id (0 = none).
+    custom-model-data: 0
+  life-gem:
+    material: HEART_OF_THE_SEA
+    name: "&c&lLife Gem"
+    lore:
+      - "&7Right-click to gain &c+1&7 life."
+      - "&8Maximum &7%max%&8 lives."
+    custom-model-data: 0
+
+# ----------------------------------------------------------------------------
+# GUI titles
+# ----------------------------------------------------------------------------
+gui:
+  revive-title: "&8Book of Life"
+  confirm-title: "&8Revive this player?"
+
+# ----------------------------------------------------------------------------
+# Resource pack. Resent to every online player on /nlreload.
+# ----------------------------------------------------------------------------
+resource-pack:
+  enabled: false
+  # Version label shown in the /nlreload confirmation message.
+  version: "26.1.2"
+  # Direct download URL to the .zip pack.
+  url: ""
+  # SHA-1 hash of the pack (40 hex chars). Recommended; leave empty to skip.
+  sha1: ""
+  # Prompt shown on the player's accept screen.
+  prompt: "&6Please accept the NoLife resource pack."
+  # If true the player must accept the pack to keep playing.
+  force: false
+  # Send the pack automatically when a player joins.
+  send-on-join: true

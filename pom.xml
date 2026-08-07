@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.longswordsmp</groupId>
+    <artifactId>nolife</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>NoLife</name>
+    <description>A three-life survival plugin with elimination, revives, Book of Life and Life Gems.</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>21</maven.compiler.release>
+        <!--
+            The Minecraft/Paper server version this plugin targets.
+            Change this one property if your server build differs.
+            (paper-26.1.2-74.jar  ->  26.1.2-R0.1-SNAPSHOT)
+        -->
+        <paper.version>26.1.2-R0.1-SNAPSHOT</paper.version>
+    </properties>
+
+    <repositories>
+        <!--
+            The Paper API is published here. If your build machine cannot reach
+            this repository you can instead install your local server jar into
+            the local Maven cache, e.g.:
+
+              mvn install:install-file -Dfile=paper-26.1.2-74.jar \
+                  -DgroupId=io.papermc.paper -DartifactId=paper-api \
+                  -Dversion=26.1.2-R0.1-SNAPSHOT -Dpackaging=jar
+
+            and Maven will resolve the dependency below from your cache.
+        -->
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>${paper.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>NoLife-${project.version}</finalName>
+        <resources>
+            <!-- Filter plugin.yml so ${project.version} is injected. -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>plugin.yml</include>
+                </includes>
+            </resource>
+            <!-- Copy everything else (config.yml, etc.) verbatim. -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>plugin.yml</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>21</release>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,31 @@
+# ============================================================================
+#  NoLife  -  crafting recipes
+# ----------------------------------------------------------------------------
+#  Each recipe is a 3x3 shaped recipe.
+#    enabled     - register this recipe at all
+#    shape       - 1 to 3 rows, each up to 3 characters. A space = empty slot.
+#    ingredients - maps a shape character to a Minecraft material name.
+#  Material names: https://jd.papermc.io (org.bukkit.Material)
+# ============================================================================
+
+book-of-life:
+  enabled: true
+  shape:
+    - "GTG"
+    - "TBT"
+    - "GTG"
+  ingredients:
+    G: GOLD_INGOT
+    T: TOTEM_OF_UNDYING
+    B: BOOK
+
+life-gem:
+  enabled: true
+  shape:
+    - "DED"
+    - "ENE"
+    - "DED"
+  ingredients:
+    D: DIAMOND
+    E: EMERALD
+    N: NETHER_STAR

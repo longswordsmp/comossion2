@@ -1,0 +1,53 @@
+# ============================================================================
+#  NoLife  -  messages
+# ----------------------------------------------------------------------------
+#  Legacy colour codes:  &c &a &e &6 ...   Hex:  &#ff0000
+#  Placeholders available for each message are noted in comments.
+# ============================================================================
+
+broadcast:
+  # %player%
+  death: "&c%player% has run out of lives and has been eliminated!"
+  # %player% %reviver%
+  revive: "&a%player% has been revived by %reviver%!"
+
+# %lives%
+life-lost: "&cYou lost a life! &7You have &e%lives%&7 lives remaining."
+
+# Shown on the kick screen when an eliminated player tries to play.
+ban-kick: "&c&lYou have been eliminated.\n\n&7You used your last life.\n&7Someone must craft a &6Book of Life&7 to revive you."
+
+no-permission: "&cYou don't have permission to do that."
+usage-setlives: "&cUsage: &7/setlives <player> <amount>"
+usage-revive: "&cUsage: &7/revive <player>"
+usage-eliminate: "&cUsage: &7/eliminate <player>"
+
+# %player%
+unknown-player: "&cUnknown player &7%player%&c. They must be online or have joined before."
+# %amount%
+invalid-number: "&c'%amount%' is not a whole number."
+
+revive-need-book: "&cYou need a Book of Life in your inventory to revive someone."
+already-revived: "&eThat player is no longer eliminated."
+no-eliminated: "&eThere are no eliminated players to revive."
+
+# %max%
+lifegem-max: "&eYou are already at the maximum of &6%max%&e lives."
+# %lives%
+lifegem-used: "&aYou consumed a Life Gem! &7You now have &e%lives%&7 lives."
+
+# %player% %lives%
+setlives-done: "&aSet &f%player%&a's lives to &e%lives%&a."
+# %lives%
+setlives-target: "&7An admin set your lives to &e%lives%&7."
+# %player%
+eliminate-done: "&aEliminated &f%player%&a."
+# %player%
+eliminate-already: "&e%player% is already eliminated."
+# %player%
+revive-done: "&aRevived &f%player%&a."
+# %player%
+revive-not-eliminated: "&e%player% is not eliminated."
+
+# %version%
+reloaded: "&aNoLife configuration reloaded. &7(resource pack v%version%)"

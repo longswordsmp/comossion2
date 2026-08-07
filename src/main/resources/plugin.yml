@@ -1,0 +1,35 @@
+name: NoLife
+version: '${project.version}'
+main: com.longswordsmp.nolife.NoLifePlugin
+api-version: '1.21'
+authors: [longswordsmp]
+description: A three-life survival plugin with elimination, revives, Book of Life and Life Gems.
+
+commands:
+  setlives:
+    description: Set a player's lives.
+    usage: /setlives <player> <amount>
+    permission: nolife.admin
+  revive:
+    description: Revive an eliminated player at your location.
+    usage: /revive <player>
+    permission: nolife.admin
+  eliminate:
+    description: Eliminate (death-ban) a player.
+    usage: /eliminate <player>
+    permission: nolife.admin
+  nlreload:
+    description: Reload the NoLife config and resend the resource pack.
+    usage: /nlreload
+    permission: nolife.admin
+
+permissions:
+  nolife.admin:
+    description: Grants access to all NoLife admin commands.
+    default: op
+  nolife.use.book:
+    description: Allows using the Book of Life to revive players.
+    default: true
+  nolife.use.lifegem:
+    description: Allows using a Life Gem to gain a life.
+    default: true
