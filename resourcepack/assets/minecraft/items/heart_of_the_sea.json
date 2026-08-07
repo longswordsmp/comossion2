@@ -1,0 +1,19 @@
+{
+  "model": {
+    "type": "range_dispatch",
+    "property": "custom_model_data",
+    "fallback": {
+      "type": "model",
+      "model": "item/heart_of_the_sea"
+    },
+    "entries": [
+      {
+        "threshold": 1000002,
+        "model": {
+          "type": "model",
+          "model": "item/life_gem"
+        }
+      }
+    ]
+  }
+}

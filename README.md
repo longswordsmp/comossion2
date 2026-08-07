@@ -126,6 +126,42 @@ server's `plugins/` folder and start the server (Java 21+ required).
 
 ---
 
+## Resource pack
+
+A ready-made pack lives in [`resourcepack/`](resourcepack/) and gives the Book
+of Life and Life Gem custom textures (a gold book with a red life-cross, and a
+red gem). It ships with **both** model systems so it works across 1.21.x:
+
+- legacy `custom_model_data` overrides (`models/item/*.json`) for ≤ 1.21.3, and
+- the new item model definitions (`items/*.json`, `range_dispatch`) for ≥ 1.21.4.
+
+The custom model ids (`1000001` book, `1000002` gem) already match
+`items.*.custom-model-data` in `config.yml`, so the plugin's items carry them
+automatically.
+
+**To use it:**
+
+1. Zip the **contents** of `resourcepack/` (so `pack.mcmeta` sits at the zip
+   root, not inside a folder):
+   ```bash
+   cd resourcepack && zip -r ../NoLife-ResourcePack.zip pack.mcmeta assets
+   ```
+2. Host the zip somewhere with a direct download URL.
+3. Compute its SHA-1 (`sha1sum NoLife-ResourcePack.zip`) and put both in
+   `config.yml`:
+   ```yaml
+   resource-pack:
+     enabled: true
+     url: "https://your-host/NoLife-ResourcePack.zip"
+     sha1: "<the sha1 hex>"
+     send-on-join: true
+   ```
+4. `/nlreload` to push it to everyone online.
+
+`pack.mcmeta` sets `pack_format: 46` (1.21.4) with a wide `supported_formats`
+range so newer clients still load it; bump `pack_format` to match your server if
+the client complains it was made for a different version.
+
 ## Notes
 
 - Name-tag / tab colouring uses the server's main scoreboard teams

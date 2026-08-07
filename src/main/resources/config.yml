@@ -37,15 +37,16 @@ items:
       - "&7Right-click to open the list of"
       - "&7eliminated players and bring"
       - "&7one of them back to life."
-    # Optional resource-pack model id (0 = none).
-    custom-model-data: 0
+    # Matches the model in the bundled resource pack (0 = no custom model).
+    custom-model-data: 1000001
   life-gem:
     material: HEART_OF_THE_SEA
     name: "&c&lLife Gem"
     lore:
       - "&7Right-click to gain &c+1&7 life."
       - "&8Maximum &7%max%&8 lives."
-    custom-model-data: 0
+    # Matches the model in the bundled resource pack (0 = no custom model).
+    custom-model-data: 1000002
 
 # ----------------------------------------------------------------------------
 # GUI titles

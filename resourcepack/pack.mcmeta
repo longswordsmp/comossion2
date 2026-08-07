@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "pack_format": 46,
+    "supported_formats": {
+      "min_inclusive": 18,
+      "max_inclusive": 999
+    },
+    "description": "NoLife \u2014 Book of Life & Life Gem"
+  }
+}
