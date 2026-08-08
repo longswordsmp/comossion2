@@ -25,6 +25,8 @@ colors:
   three-lives: green
   two-lives: yellow
   one-life: red
+  # Colour for admins with infinite lives (/setlives <player> admin).
+  infinite: aqua
 
 # ----------------------------------------------------------------------------
 # Custom item appearance. Crafting shapes are defined in recipes.yml.

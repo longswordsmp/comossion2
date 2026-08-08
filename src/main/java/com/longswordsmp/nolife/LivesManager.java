@@ -31,6 +31,7 @@ public class LivesManager {
     private static final String TEAM_THREE = "nl_three";
     private static final String TEAM_TWO = "nl_two";
     private static final String TEAM_ONE = "nl_one";
+    private static final String TEAM_INF = "nl_inf";
 
     private final JavaPlugin plugin;
     private final PluginConfig cfg;
@@ -39,6 +40,7 @@ public class LivesManager {
     private Team teamThree;
     private Team teamTwo;
     private Team teamOne;
+    private Team teamInfinite;
 
     private Particle totemParticle;
 
@@ -55,9 +57,11 @@ public class LivesManager {
         teamThree = getOrCreateTeam(board, TEAM_THREE);
         teamTwo = getOrCreateTeam(board, TEAM_TWO);
         teamOne = getOrCreateTeam(board, TEAM_ONE);
+        teamInfinite = getOrCreateTeam(board, TEAM_INF);
         clearEntries(teamThree);
         clearEntries(teamTwo);
         clearEntries(teamOne);
+        clearEntries(teamInfinite);
         applyColors();
     }
 
@@ -71,6 +75,9 @@ public class LivesManager {
         }
         if (teamOne != null) {
             teamOne.setColor(cfg.colorOne());
+        }
+        if (teamInfinite != null) {
+            teamInfinite.setColor(cfg.colorInfinite());
         }
     }
 
@@ -98,6 +105,9 @@ public class LivesManager {
         if (teamOne != null) {
             teamOne.removeEntry(entry);
         }
+        if (teamInfinite != null) {
+            teamInfinite.removeEntry(entry);
+        }
     }
 
     /** Recolour a player's name-tag and tab-list entry for their life count. */
@@ -106,6 +116,12 @@ public class LivesManager {
         removeFromAllTeams(entry);
 
         if (isEliminated(player.getUniqueId())) {
+            return;
+        }
+        if (isInfinite(player.getUniqueId())) {
+            if (teamInfinite != null) {
+                teamInfinite.addEntry(entry);
+            }
             return;
         }
         int lives = getLivesOrDefault(player.getUniqueId());
@@ -139,6 +155,24 @@ public class LivesManager {
     public boolean isEliminated(UUID uuid) {
         PlayerData d = data.get(uuid);
         return d != null && d.isEliminated();
+    }
+
+    public boolean isInfinite(UUID uuid) {
+        PlayerData d = data.get(uuid);
+        return d != null && d.isInfinite();
+    }
+
+    /** Give a player infinite lives (admin mode): never loses lives, never eliminated. */
+    public void setInfinite(UUID uuid, String nameHint) {
+        PlayerData d = getOrCreate(uuid, nameHint);
+        d.setInfinite(true);
+        d.setEliminated(false);
+        d.setLives(cfg.maxLives());
+        Player online = Bukkit.getPlayer(uuid);
+        if (online != null) {
+            updateDisplay(online);
+        }
+        data.save();
     }
 
     /** Ensure a data row exists for a player who just joined and refresh their name. */
@@ -180,6 +214,7 @@ public class LivesManager {
         int value = cfg.clamp(lives);
         PlayerData d = getOrCreate(uuid, nameHint);
         d.setLives(value);
+        d.setInfinite(false); // a concrete number turns off admin/infinite mode
         if (value > 0) {
             d.setEliminated(false);
         }
@@ -198,6 +233,7 @@ public class LivesManager {
         PlayerData d = getOrCreate(uuid, nameHint);
         boolean already = d.isEliminated();
         d.setEliminated(true);
+        d.setInfinite(false); // an explicit elimination overrides admin/infinite mode
         d.setLives(0);
         String name = d.getName();
 

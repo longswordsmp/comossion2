@@ -19,7 +19,7 @@ ban-kick: "&c&lYou have been eliminated.\n\n&7You used your last life.\n&7Someon
 
 no-permission: "&cYou don't have permission to do that."
 players-only: "&cOnly players can open that menu."
-usage-setlives: "&cUsage: &7/setlives <player> <amount>"
+usage-setlives: "&cUsage: &7/setlives <player> <amount|admin>"
 usage-revive: "&cUsage: &7/revive <player>"
 usage-eliminate: "&cUsage: &7/eliminate <player>"
 usage-nlgive: "&cUsage: &7/nlgive [player] <book|gem> [amount]"
@@ -43,6 +43,9 @@ lifegem-used: "&aYou consumed a Life Gem! &7You now have &e%lives%&7 lives."
 setlives-done: "&aSet &f%player%&a's lives to &e%lives%&a."
 # %lives%
 setlives-target: "&7An admin set your lives to &e%lives%&7."
+# %player%
+setlives-infinite: "&aSet &f%player%&a to &b&l∞ &alives (admin mode)."
+setlives-target-infinite: "&7An admin gave you &b&l∞ &7lives (you can't lose lives)."
 # %player%
 eliminate-done: "&aEliminated &f%player%&a."
 # %player%

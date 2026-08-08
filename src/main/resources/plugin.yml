@@ -15,8 +15,8 @@ commands:
     usage: /nolife
     aliases: [nl]
   setlives:
-    description: Set a player's lives.
-    usage: /setlives <player> <amount>
+    description: Set a player's lives (use 'admin' for infinite).
+    usage: /setlives <player> <amount|admin>
   revive:
     description: Revive an eliminated player at your location.
     usage: /revive <player>

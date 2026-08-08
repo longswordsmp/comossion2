@@ -56,7 +56,9 @@ public class DataStore {
                 String name = s.getString("name", "");
                 int lives = s.getInt("lives", 3);
                 boolean eliminated = s.getBoolean("eliminated", false);
-                players.put(uuid, new PlayerData(uuid, name, lives, eliminated));
+                PlayerData data = new PlayerData(uuid, name, lives, eliminated);
+                data.setInfinite(s.getBoolean("infinite", false));
+                players.put(uuid, data);
             }
         }
 
@@ -90,6 +92,7 @@ public class DataStore {
             yaml.set(base + ".name", data.getName());
             yaml.set(base + ".lives", data.getLives());
             yaml.set(base + ".eliminated", data.isEliminated());
+            yaml.set(base + ".infinite", data.isInfinite());
         }
 
         for (Map.Entry<UUID, PendingRevive> entry : pending.entrySet()) {

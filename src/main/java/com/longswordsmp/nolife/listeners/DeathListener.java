@@ -28,6 +28,9 @@ public class DeathListener implements Listener {
         if (plugin.lives().isEliminated(uuid)) {
             return; // already out; nothing to subtract
         }
+        if (plugin.lives().isInfinite(uuid)) {
+            return; // admin/infinite lives: never lose a life
+        }
 
         int next = plugin.lives().getLivesOrDefault(uuid) - 1;
         if (next >= 1) {

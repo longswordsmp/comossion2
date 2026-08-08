@@ -113,6 +113,7 @@ public final class Guis {
     public static void openAmountSelector(NoLifePlugin plugin, Player admin, UUID id, String name) {
         int max = plugin.config().maxLives();
         boolean elim = plugin.lives().isEliminated(id);
+        boolean inf = plugin.lives().isInfinite(id);
         int current = elim ? 0 : plugin.lives().getLivesOrDefault(id);
 
         int count = max + 1;                              // buttons 0..max
@@ -123,7 +124,7 @@ public final class Guis {
         Menu menu = new Menu(title("&8Lives: &f" + name), rows);
         menu.fill(filler());
         menu.set(4, head(id, name, "&e" + name,
-                List.of(elim ? "&cELIMINATED" : "&7Current: &f" + current)));
+                List.of(elim ? "&cELIMINATED" : inf ? "&bCurrent: &b&l∞" : "&7Current: &f" + current)));
 
         int backRowStart = menu.size() - 9;
         for (int n = 0; n <= max; n++) {
@@ -157,6 +158,16 @@ public final class Guis {
                 open(plugin, () -> openAmountSelector(plugin, v, id, name));
             });
         }
+        menu.button(8, icon(Material.NETHER_STAR, "&b&lADMIN (∞ lives)",
+                "&7Never loses lives or is eliminated"), (v, e) -> {
+            plugin.lives().setInfinite(id, name);
+            v.sendMessage(plugin.config().msg("setlives-infinite", "%player%", name));
+            Player online = Bukkit.getPlayer(id);
+            if (online != null) {
+                online.sendMessage(plugin.config().msg("setlives-target-infinite"));
+            }
+            open(plugin, () -> openAmountSelector(plugin, v, id, name));
+        });
         menu.button(menu.size() - 5, icon(Material.ARROW, "&cBack"),
                 (v, e) -> open(plugin, () -> openPlayerPicker(plugin, v, "&8Manage Lives", 0,
                         (i2, n2) -> openAmountSelector(plugin, v, i2, n2), () -> openAdminHub(plugin, v))));
@@ -463,7 +474,8 @@ public final class Guis {
         for (PlayerData d : all) {
             UUID id = d.getUuid();
             String name = d.getName();
-            String status = d.isEliminated() ? "&cELIMINATED" : "&aLives: &f" + d.getLives();
+            String status = d.isEliminated() ? "&cELIMINATED"
+                    : d.isInfinite() ? "&b∞ Admin" : "&aLives: &f" + d.getLives();
             icons.add(head(id, name, "&e" + name, List.of(status, "&7Click to manage")));
             clicks.add((v, e) -> open(plugin, () -> openManagePlayer(plugin, v, id, name)));
         }
@@ -473,10 +485,12 @@ public final class Guis {
 
     public static void openManagePlayer(NoLifePlugin plugin, Player admin, UUID id, String name) {
         boolean elim = plugin.lives().isEliminated(id);
+        boolean inf = plugin.lives().isInfinite(id);
         int lives = elim ? 0 : plugin.lives().getLivesOrDefault(id);
         Menu menu = new Menu(title("&8Manage &f" + name), 3);
         menu.fill(filler());
-        menu.set(4, head(id, name, "&e" + name, List.of(elim ? "&cELIMINATED" : "&aLives: &f" + lives)));
+        menu.set(4, head(id, name, "&e" + name,
+                List.of(elim ? "&cELIMINATED" : inf ? "&b∞ Admin (infinite)" : "&aLives: &f" + lives)));
 
         menu.button(10, icon(Material.EXPERIENCE_BOTTLE, "&aSet Lives"),
                 (v, e) -> open(plugin, () -> openAmountSelector(plugin, v, id, name)));
@@ -503,25 +517,32 @@ public final class Guis {
     public static void openLives(NoLifePlugin plugin, Player viewer, UUID id, String name) {
         int max = plugin.config().maxLives();
         boolean elim = plugin.lives().isEliminated(id);
+        boolean inf = plugin.lives().isInfinite(id);
         int lives = elim ? 0 : plugin.lives().getLivesOrDefault(id);
 
-        int heartRows = Math.max(1, (max + 8) / 9);
+        int heartRows = inf ? 1 : Math.max(1, (max + 8) / 9);
         int rows = Math.min(6, 1 + heartRows);            // header + heart rows
 
         Menu menu = new Menu(title("&8" + name + "'s Lives"), rows);
         menu.fill(filler());
-        menu.set(4, head(id, name, "&e" + name,
-                List.of(elim ? "&cELIMINATED" : "&aLives: &f" + lives + "&7/" + max)));
+        String statusLine = elim ? "&cELIMINATED"
+                : inf ? "&bLives: &b&l∞ &7(admin)" : "&aLives: &f" + lives + "&7/" + max;
+        menu.set(4, head(id, name, "&e" + name, List.of(statusLine)));
 
-        for (int i = 0; i < max; i++) {
-            int col = (max <= 9) ? (9 - max) / 2 + (i % 9) : (i % 9);
-            int slot = (1 + i / 9) * 9 + col;
-            if (slot >= menu.size()) {
-                break;
+        if (inf) {
+            menu.set(13, icon(Material.NETHER_STAR, "&b&l∞ Infinite Lives",
+                    "&7This player can't lose lives."));
+        } else {
+            for (int i = 0; i < max; i++) {
+                int col = (max <= 9) ? (9 - max) / 2 + (i % 9) : (i % 9);
+                int slot = (1 + i / 9) * 9 + col;
+                if (slot >= menu.size()) {
+                    break;
+                }
+                boolean filledHeart = i < lives;
+                menu.set(slot, icon(filledHeart ? Material.RED_DYE : Material.GRAY_DYE,
+                        filledHeart ? "&c❤ Life" : "&8♡ Lost"));
             }
-            boolean filledHeart = i < lives;
-            menu.set(slot, icon(filledHeart ? Material.RED_DYE : Material.GRAY_DYE,
-                    filledHeart ? "&c❤ Life" : "&8♡ Lost"));
         }
         menu.open(viewer);
     }

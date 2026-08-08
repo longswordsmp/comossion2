@@ -12,6 +12,7 @@ public class PlayerData {
     private String name;
     private int lives;
     private boolean eliminated;
+    private boolean infinite;
 
     public PlayerData(UUID uuid, String name, int lives, boolean eliminated) {
         this.uuid = uuid;
@@ -48,5 +49,13 @@ public class PlayerData {
 
     public void setEliminated(boolean eliminated) {
         this.eliminated = eliminated;
+    }
+
+    public boolean isInfinite() {
+        return infinite;
+    }
+
+    public void setInfinite(boolean infinite) {
+        this.infinite = infinite;
     }
 }

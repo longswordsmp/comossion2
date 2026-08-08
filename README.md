@@ -44,7 +44,7 @@ are available to everyone.
 | Command | Description |
 |---------|-------------|
 | `/nolife` (`/nl`) | Open the **admin menu** — a GUI hub linking to every action below. |
-| `/setlives <player> <amount>` | Set a player's lives (0 = eliminate). |
+| `/setlives <player> <amount\|admin>` | Set a player's lives. `0` eliminates; `admin` grants **infinite lives** (never loses a life, shown in a distinct colour). Any number turns it back off. |
 | `/revive <player>` | Remove the death-ban and revive the player at your location (2 lives). |
 | `/eliminate <player>` | Immediately death-ban a player. |
 | `/nlgive [player] <book\|gem> [amount]` | Give a Book of Life or Life Gem. Omit the player to give to yourself. |

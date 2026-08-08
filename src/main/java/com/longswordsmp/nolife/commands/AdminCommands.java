@@ -112,6 +112,21 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
             sender.sendMessage(cfg().msg("unknown-player", "%player%", args[0]));
             return;
         }
+        String name = displayName(id, args[0]);
+
+        // /setlives <player> admin  -> infinite lives (never lose a life)
+        String amountArg = args[1].toLowerCase(Locale.ROOT);
+        if (amountArg.equals("admin") || amountArg.equals("inf")
+                || amountArg.equals("infinite") || amountArg.equals("∞")) {
+            plugin.lives().setInfinite(id, name);
+            sender.sendMessage(cfg().msg("setlives-infinite", "%player%", name));
+            Player online = Bukkit.getPlayer(id);
+            if (online != null) {
+                online.sendMessage(cfg().msg("setlives-target-infinite"));
+            }
+            return;
+        }
+
         int amount;
         try {
             amount = Integer.parseInt(args[1]);
@@ -120,7 +135,6 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
             return;
         }
 
-        String name = displayName(id, args[0]);
         if (amount <= 0) {
             plugin.lives().eliminate(id, name, true);
             sender.sendMessage(cfg().msg("eliminate-done", "%player%", name));
@@ -424,6 +438,7 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
             for (int i = 0; i <= plugin.config().maxLives(); i++) {
                 options.add(String.valueOf(i));
             }
+            options.add("admin");
             return prefixed(options, args[1]);
         }
         return Collections.emptyList();

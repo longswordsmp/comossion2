@@ -117,6 +117,10 @@ public class PluginConfig {
         return color("colors.one-life", ChatColor.RED);
     }
 
+    public ChatColor colorInfinite() {
+        return color("colors.infinite", ChatColor.AQUA);
+    }
+
     private ChatColor color(String path, ChatColor def) {
         String raw = config.getString(path);
         if (raw == null) {
