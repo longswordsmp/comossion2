@@ -1,18 +1,23 @@
 # ------------------------------------------------------------------
 #  WitherStrikeCannon
-#  Cast the rod, the bobber paints a target, orbital wither skulls do
-#  the rest.
+#  Right click the rod, and a 120 block wide orbital barrage lands on
+#  whatever you were looking at.
+#
+#  NOTE: if you are upgrading from an older version, DELETE this file
+#  and restart so the new defaults are written.
 # ------------------------------------------------------------------
 
 targeting:
-  # BOBBER   - the strike lands where the fishing bobber lands (default,
-  #            limited to normal fishing rod range).
   # RAYTRACE - right clicking fires instantly at whatever block you are
-  #            looking at, up to max-distance blocks away.
-  mode: BOBBER
+  #            looking at, up to max-distance blocks away (default - the
+  #            blast is far too big to stand next to).
+  # BOBBER   - cast the rod and the strike lands where the bobber lands.
+  #            Limited to fishing rod range, so you WILL be inside the
+  #            crater. Fun, but bring a totem.
+  mode: RAYTRACE
 
   # RAYTRACE mode only: how far the aiming ray reaches.
-  max-distance: 128.0
+  max-distance: 300.0
 
   # BOBBER mode only: give up and strike wherever the bobber is after
   # this many ticks in flight (20 ticks = 1 second).
@@ -20,25 +25,28 @@ targeting:
 
 strike:
   # How many wither skulls per shot.
-  skull-count: 150
+  skull-count: 2000
 
   # Hard ceiling, so a typo in skull-count cannot take the server down.
-  max-skull-count: 1000
+  max-skull-count: 5000
 
-  # Radius (in blocks) of the circle the skulls spawn in / rain into.
-  spread: 1.5
+  # Radius in blocks of the circle the skulls rain into. 60 = a 120 block
+  # wide strike zone.
+  spread: 60.0
+
+  # How far each skull's impact point wanders from the column it fell
+  # down. Small values keep the rain near vertical - large values make
+  # the skulls streak across the sky at an angle.
+  impact-jitter: 3.0
 
   # How far above the target the skulls spawn. Higher = longer fall.
-  height: 80.0
+  height: 140.0
 
-  # Skulls are released over this many ticks instead of all in one tick.
-  # Keep this above 1 - spawning 150 entities in a single tick spikes TPS.
-  waves: 10
+  # Skulls are released across this many waves, one wave per
+  # wave-delay-ticks, instead of all at once. 2000 entities in a single
+  # tick is an instant TPS crater.
+  waves: 120
   wave-delay-ticks: 1
-
-  # Give each skull its own random impact point inside the spread circle
-  # (true = scattered rain, false = perfectly vertical parallel column).
-  scatter-impacts: true
 
   # Blue (charged) wither skulls instead of black ones.
   charged: false
@@ -47,12 +55,13 @@ strike:
   # skulls accelerate faster than a real wither's shots.
   speed-multiplier: 1.0
 
-  # Stop skulls from being popped in mid air by the explosions of the
-  # skulls that landed before them.
+  # Skulls ignore damage. With explosion.mode CUSTOM this just stops them
+  # being popped early; in VANILLA mode it is also why surviving skulls
+  # get launched skyward by the blasts below them.
   invulnerable: true
 
   # Seconds between shots, per player. 0 disables the cooldown.
-  cooldown-seconds: 5
+  cooldown-seconds: 45
 
   # Cancel damage that a player's own barrage would deal to them.
   protect-shooter: true
@@ -60,20 +69,51 @@ strike:
   # Play the wither sounds and draw the targeting ring.
   effects: true
 
+  # Only render the explosion effect on every Nth impact. 2000 explosion
+  # particle packets in six seconds is a client side slideshow.
+  impact-effect-every: 3
+
   # Worlds where the cannon refuses to fire, e.g. [world_spawn, lobby].
   disabled-worlds: []
 
 explosion:
-  # false = skulls still hurt entities but never break blocks.
+  # CUSTOM  - the vanilla blast is cancelled and the plugin carves the
+  #           crater itself. Massively more destruction for far less CPU,
+  #           and (importantly) nothing knocks the falling skulls around.
+  #           Does NOT respect region protection plugins like WorldGuard.
+  # VANILLA - let each skull explode normally, using power/block-damage
+  #           below. Region plugins work, destruction is much smaller,
+  #           and skulls get flung into the air by earlier impacts.
+  mode: CUSTOM
+
+  # CUSTOM mode: radius in blocks carved out around each impact. Combined
+  # with spread 60 this digs roughly a 120 wide, 32 deep crater and removes
+  # about 440,000 blocks per shot.
+  blast-radius: 16.0
+
+  # CUSTOM mode: how many blocks may be removed per tick. This is the
+  # single most important performance dial - lower it if the server
+  # stutters while a crater is forming, raise it for faster destruction.
+  blocks-per-tick: 6000
+
+  # CUSTOM mode: absolute cap on blocks removed by one strike. The queue
+  # costs roughly 56 bytes per block, so 1,000,000 is about 56 MB of heap
+  # while a strike is being carved. Raise it only if you raise the radii.
+  max-blocks-per-strike: 1000000
+
+  # CUSTOM mode: remove water and lava too. Leaving this false is much
+  # kinder to TPS, since carved liquids immediately start flowing back.
+  carve-liquids: false
+
+  # CUSTOM mode: damage dealt to every living thing in the strike zone,
+  # repeated damage-pulses times while the barrage lands.
+  damage-per-pulse: 15.0
+  damage-pulses: 16
+  damage-pulse-interval-ticks: 10
+
+  # VANILLA mode only.
   block-damage: true
-
-  # -1 keeps the vanilla wither skull explosion (power 1.0, and blocks
-  # only break when the mobGriefing gamerule is on). Any value above 0
-  # replaces it with a custom explosion of that power - 4.0 is roughly a
-  # TNT blast, and it breaks blocks regardless of mobGriefing.
-  power: -1.0
-
-  # Custom explosions only: set fire on impact.
+  power: 4.0
   incendiary: false
 
 item:
@@ -81,8 +121,8 @@ item:
   lore:
     - '<dark_gray>Orbital ordnance, hand held.'
     - ''
-    - '<gray>Cast to paint a target.'
-    - '<gray>150 wither skulls answer.'
+    - '<gray>Right click to designate a target.'
+    - '<gray>2000 wither skulls answer.'
   glint: true
   unbreakable: true
 
@@ -91,7 +131,7 @@ messages:
   no-permission: '<red>You do not have permission to do that.'
   player-only: '<red>Only players can use that.'
   player-not-found: '<red>%player% is not online.'
-  received: '<gray>Cannon armed. <white>Cast the rod to paint a target.'
+  received: '<gray>Cannon armed. <white>Right click to designate a target.'
   given: '<gray>Gave a cannon to <white>%player%<gray>.'
   reloaded: '<green>Configuration reloaded.'
   cooldown: '<red>Cannon recharging - <white>%seconds%s<red> remaining.'

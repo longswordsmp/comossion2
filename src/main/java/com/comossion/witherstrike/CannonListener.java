@@ -196,6 +196,14 @@ public final class CannonListener implements Listener {
             return;
         }
 
+        if (config.explosionMode() == CannonConfig.ExplosionMode.CUSTOM) {
+            // Cancelling the vanilla blast is what stops the explosions from launching the
+            // still-falling skulls into the sky. We carve the crater ourselves instead.
+            event.setCancelled(true);
+            strikes.onImpact(entity, event.getLocation());
+            return;
+        }
+
         if (config.explosionPower() > 0.0D) {
             event.setCancelled(true);
             strikes.createCustomExplosion(entity, event.getLocation());

@@ -1,29 +1,28 @@
 # WitherStrikeCannon
 
-A Paper 1.21.11 plugin. `/witherstrikecannon` hands you a fishing rod; cast it, and
-wherever the bobber lands takes ~150 wither skulls straight down out of the sky.
+A Paper 1.21.11 plugin. `/witherstrikecannon` hands you a fishing rod; right click it and
+**2000 wither skulls** fall out of the sky onto whatever you were looking at, up to 300 blocks
+away, leaving a crater roughly **120 blocks wide and 32 deep — about 440,000 blocks removed**.
 
-- **150 wither skulls** per shot (configurable)
-- **1.5 block circular spread** — skulls launch from, and rain into, a disc of that radius
-- **Normal wither head speed** — skulls use the vanilla wither skull acceleration (0.1/tick),
-  not a custom velocity, so they look and behave exactly like a real wither's shots
-- Skulls are released in waves over 10 ticks instead of all in one tick, so 150 entities
-  don't spike the server
+- **2000 wither skulls** per shot, raining into a 60 block radius circle
+- **Normal wither head speed** — skulls use the vanilla wither skull acceleration, not a
+  custom velocity
+- **~300x the destruction** of a vanilla-explosion approach, at a fraction of the CPU cost
+- Released in 120 waves over 6 seconds, so it lands as a sustained bombardment instead of
+  one server-killing tick
 
 ## Build
 
 Requires JDK 21 and Maven.
 
 ```bash
-mvn clean package
+mvn clean package     # -> target/WitherStrikeCannon-1.0.0.jar
 ```
 
-The jar lands at `target/WitherStrikeCannon-1.0.0.jar`. Drop it in `plugins/` and restart.
+Drop the jar in `plugins/` and restart.
 
-> The build pulls `io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT` from
-> `https://repo.papermc.io`. If you run a different Minecraft version, change the
-> `<paper.version>` property in `pom.xml` — the plugin only uses long-stable API, so
-> anything from 1.20.5 up should compile as-is.
+> **Upgrading?** Delete `plugins/WitherStrikeCannon/config.yml` and restart, otherwise your
+> old (much smaller) values are kept and none of the new options exist.
 
 ## Commands
 
@@ -33,69 +32,83 @@ The jar lands at `target/WitherStrikeCannon-1.0.0.jar`. Drop it in `plugins/` an
 | `/witherstrikecannon give <player>` | `witherstrikecannon.give` | op | Gives someone else a cannon |
 | `/witherstrikecannon reload` | `witherstrikecannon.reload` | op | Re-reads `config.yml` live |
 
-Aliases: `/wsc`, `/witherstrike`, `/withercannon`.
+Aliases: `/wsc`, `/witherstrike`, `/withercannon`. Firing a rod you're holding needs
+`witherstrikecannon.use` (default: everyone).
 
-Actually *firing* a cannon you're holding needs `witherstrikecannon.use` (default: everyone),
-so you can hand rods to players without giving them the command.
+## Why the skulls used to fly off into the sky
 
-## How firing works
+The old version let each skull explode normally. Vanilla explosions apply **knockback to every
+entity in range, including projectiles** — so the first skulls to land blasted the ones still
+falling back upward. Because they were also spawned `invulnerable`, they survived the shove
+instead of popping, and sailed away. A tight column made it as bad as possible.
 
-**BOBBER mode (default).** Right click to cast. The plugin follows the bobber and fires the
-moment it settles — on the ground, in water, or on a mob you hooked. Reel in before it lands
-and nothing happens. Range is normal fishing rod range (~30 blocks).
+`explosion.mode: CUSTOM` (the default now) fixes it at the root: the vanilla blast is
+**cancelled entirely**, so there is no knockback to fling anything. The plugin carves the
+crater itself instead.
 
-**RAYTRACE mode.** Set `targeting.mode: RAYTRACE` for a long range version: right click and
-the strike lands on whatever block you're looking at, up to `max-distance` blocks away. The
-rod never casts a bobber in this mode.
+That's also what makes the destruction affordable. 2000 vanilla explosions is 2000 separate
+ray-cast passes; carving is one deduplicated set of block removals, drained at a fixed budget
+per tick. Impacts are snapped to a grid first, so 2000 skulls become ~90 sphere carves rather
+than 2000 overlapping ones.
 
-Either way the target gets a soul fire ring and a wither roar while the skulls are inbound
-(~2.5 seconds of fall time at the default 80 block launch height).
+**Caveat:** because it doesn't go through the explosion event, CUSTOM mode does **not** respect
+region protection plugins like WorldGuard. If you need those honoured, set
+`explosion.mode: VANILLA` — you get much less destruction, and the skull-launching behaviour
+comes back.
+
+## Targeting
+
+**RAYTRACE (default).** Right click; the strike lands on the block you're looking at, up to
+`max-distance` (300) blocks away. This is the default because a 120 block wide crater is not
+something you want to be standing in.
+
+**BOBBER.** `targeting.mode: BOBBER` restores the original feel — cast the rod, and the strike
+lands where the bobber lands. Fishing rod range is ~30 blocks, so with the current radius
+**you will be inside your own crater**. Damage is cancelled for the shooter, but you'll still
+be falling into a very deep hole.
+
+## Scaling it up or down
+
+The three dials that matter, and what they actually produce (measured by simulating the
+carve geometry):
+
+| skulls | `spread` | `blast-radius` | blocks destroyed | crater | carve time |
+| --- | --- | --- | --- | --- | --- |
+| 1500 | 40 | 12 | 162,000 | 80 wide, 24 deep | 2.0 s |
+| **2000** | **60** | **16** | **441,000** | **120 wide, 32 deep** | **3.7 s** |
+| 2500 | 60 | 18 | 555,000 | 120 wide, 36 deep | 4.6 s |
+| 3000 | 80 | 20 | 1,037,000 | 160 wide, 40 deep | 6.5 s |
+
+That last row is the "delete the whole base" setting. If you use it, also raise
+`explosion.max-blocks-per-strike` (the queue costs ~56 bytes per block, so a million-block
+crater is ~56 MB of heap while it's being carved) and expect the carve to take a few seconds.
+
+## Performance dials
+
+`explosion.blocks-per-tick` (default 6000) is the single most important one — it caps how much
+terrain work happens per tick, so a giant crater takes longer to form rather than freezing the
+server. Lower it if you see stutter, raise it for faster destruction.
+
+Others worth knowing:
+
+- `strike.waves` — more waves spreads entity spawning over more ticks (free, do this first)
+- `strike.impact-effect-every` — explosion particles are only drawn every Nth impact; raise it
+  if clients chug
+- `explosion.carve-liquids` — leave `false`; carved water and lava immediately start flowing
+  back, which is its own TPS problem
+- `strike.skull-count` is capped by `strike.max-skull-count` (5000) so a typo can't nuke the box
+
+## Damage
+
+Instead of 2000 individual explosion damage calculations, everything living in the strike zone
+takes `explosion.damage-per-pulse` (15) damage every `damage-pulse-interval-ticks` (10) for
+`damage-pulses` (16) pulses — 240 damage total across the barrage. The shooter is skipped when
+`strike.protect-shooter` is on. Skulls still deal their normal direct-hit damage and wither
+effect on top of that.
 
 ## Configuration
 
-Everything below lives in `plugins/WitherStrikeCannon/config.yml`.
-
-### `strike`
-
-| Key | Default | Notes |
-| --- | --- | --- |
-| `skull-count` | `150` | Skulls per shot |
-| `max-skull-count` | `1000` | Hard ceiling so a typo can't kill the server |
-| `spread` | `1.5` | Radius in blocks of the launch/impact circle |
-| `height` | `80.0` | Blocks above the target that skulls spawn (clamped to the build limit) |
-| `waves` | `10` | Skulls are split across this many ticks |
-| `wave-delay-ticks` | `1` | Ticks between waves |
-| `scatter-impacts` | `true` | Each skull gets its own random impact point in the circle; `false` = a perfectly vertical column |
-| `charged` | `false` | Blue wither skulls |
-| `speed-multiplier` | `1.0` | `1.0` is exactly vanilla wither skull speed |
-| `invulnerable` | `true` | Stops incoming skulls being popped by the explosions of the ones that landed first |
-| `cooldown-seconds` | `5` | Per player, `0` to disable |
-| `protect-shooter` | `true` | You don't take damage from your own barrage |
-| `effects` | `true` | Sounds and the targeting ring |
-| `disabled-worlds` | `[]` | Worlds where the cannon won't fire |
-
-### `explosion`
-
-| Key | Default | Notes |
-| --- | --- | --- |
-| `block-damage` | `true` | `false` keeps the damage but leaves terrain intact |
-| `power` | `-1.0` | `-1` = the vanilla wither skull blast (and blocks only break when `mobGriefing` is on). Any value `> 0` replaces it with a custom explosion of that power that ignores `mobGriefing` — `4.0` is roughly TNT |
-| `incendiary` | `false` | Custom explosions only: set fire on impact |
-
-### `item` and `messages`
-
-`item.name` / `item.lore` and every chat message are [MiniMessage](https://docs.advntr.dev/minimessage/format.html)
-formatted, so gradients and hex colours work. Message placeholders are `%player%`,
-`%seconds%` and `%count%`.
-
-## Tuning notes
-
-150 skulls means 150 explosions in a couple of seconds — that's the point, but it is the
-expensive part. If you see TPS drops:
-
-- raise `waves` (spreading the same skulls over more ticks costs nothing visually)
-- lower `skull-count`, or shrink `spread` so fewer separate explosion volumes get calculated
-- set `explosion.block-damage: false` — most of the cost is block breaking, not the entities
-
-For a survival server, the sane setup is `block-damage: false` plus a longer
-`cooldown-seconds`, or just leave `witherstrikecannon.command` op-only.
+Everything lives in `plugins/WitherStrikeCannon/config.yml`, which is commented in full.
+`item.name`, `item.lore` and all messages are
+[MiniMessage](https://docs.advntr.dev/minimessage/format.html) formatted; message placeholders
+are `%player%`, `%seconds%` and `%count%`.
