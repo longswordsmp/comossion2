@@ -270,6 +270,21 @@ public class PluginConfig {
         return config.getBoolean("resource-pack.send-on-join", true);
     }
 
+    // ---- chat / sounds ----------------------------------------------------
+
+    public boolean adminChatPrefixEnabled() {
+        return config.getBoolean("chat.admin-prefix-enabled", true);
+    }
+
+    public String adminChatPrefix() {
+        return config.getString("chat.admin-prefix", "&c&lADMIN ");
+    }
+
+    /** Sound key played to everyone when a player is eliminated (empty = off). */
+    public String eliminateSound() {
+        return config.getString("sounds.eliminate", "minecraft:block.beacon.activate");
+    }
+
     // ---- bounties ---------------------------------------------------------
 
     public boolean bountyEnabled() {

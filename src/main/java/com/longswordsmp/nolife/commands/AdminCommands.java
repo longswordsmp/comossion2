@@ -79,6 +79,8 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
                 return lives(sender, args);
             case "nlrecipes":
                 return recipes(sender);
+            case "godmode":
+                return godmode(sender, args);
             default:
                 return false;
         }
@@ -334,6 +336,36 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    // ---- /godmode ---------------------------------------------------------
+
+    private boolean godmode(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nolife.godmode")) {
+            sender.sendMessage(cfg().msg("no-permission"));
+            return true;
+        }
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(cfg().msg("players-only"));
+            return true;
+        }
+        UUID id = player.getUniqueId();
+        boolean enable;
+        if (args.length >= 1) {
+            String a = args[0].toLowerCase(Locale.ROOT);
+            if (a.equals("on") || a.equals("enable") || a.equals("true")) {
+                enable = true;
+            } else if (a.equals("off") || a.equals("disable") || a.equals("false")) {
+                enable = false;
+            } else {
+                enable = !plugin.godMode().isGod(id);
+            }
+        } else {
+            enable = !plugin.godMode().isGod(id);
+        }
+        plugin.godMode().set(id, enable);
+        player.sendMessage(cfg().msg(enable ? "godmode-enabled" : "godmode-disabled"));
+        return true;
+    }
+
     // ---- helpers ----------------------------------------------------------
 
     private UUID resolve(String name) {
@@ -394,6 +426,13 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
         if (name.equals("lives")) {
             if (args.length == 1 && isAdmin) {
                 return onlineAndTrackedNames(args[0].toLowerCase(Locale.ROOT));
+            }
+            return Collections.emptyList();
+        }
+
+        if (name.equals("godmode")) {
+            if (args.length == 1 && sender.hasPermission("nolife.godmode")) {
+                return prefixed(Arrays.asList("on", "off"), args[0]);
             }
             return Collections.emptyList();
         }

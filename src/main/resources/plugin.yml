@@ -40,6 +40,10 @@ commands:
     description: Place, reclaim or view Life Gem bounties on players.
     usage: /bounty <add|remove|list> [player] [amount]
     aliases: [bounties]
+  godmode:
+    description: Toggle god mode (take no damage) for yourself.
+    usage: /godmode [on|off]
+    aliases: [god]
 
 permissions:
   nolife.admin:
@@ -60,3 +64,6 @@ permissions:
   nolife.bounty:
     description: Allows placing, reclaiming and viewing bounties with /bounty.
     default: true
+  nolife.godmode:
+    description: Allows toggling god mode with /godmode.
+    default: op

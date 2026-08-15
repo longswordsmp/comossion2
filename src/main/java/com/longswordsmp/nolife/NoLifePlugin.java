@@ -11,7 +11,9 @@ import com.longswordsmp.nolife.config.PluginConfig;
 import com.longswordsmp.nolife.data.DataStore;
 import com.longswordsmp.nolife.gui.GuiListener;
 import com.longswordsmp.nolife.items.ItemManager;
+import com.longswordsmp.nolife.listeners.ChatListener;
 import com.longswordsmp.nolife.listeners.ConnectionListener;
+import com.longswordsmp.nolife.listeners.DamageListener;
 import com.longswordsmp.nolife.listeners.DeathListener;
 import com.longswordsmp.nolife.listeners.ItemUseListener;
 
@@ -28,6 +30,7 @@ public final class NoLifePlugin extends JavaPlugin {
     private LivesManager livesManager;
     private ItemManager itemManager;
     private BountyManager bountyManager;
+    private GodModeManager godModeManager;
     private ResourcePackService resourcePackService;
 
     @Override
@@ -46,6 +49,8 @@ public final class NoLifePlugin extends JavaPlugin {
         this.bountyManager = new BountyManager(this);
         this.bountyManager.load();
 
+        this.godModeManager = new GodModeManager();
+
         this.resourcePackService = new ResourcePackService(this, config);
 
         PluginManager pm = getServer().getPluginManager();
@@ -53,6 +58,8 @@ public final class NoLifePlugin extends JavaPlugin {
         pm.registerEvents(new ConnectionListener(this), this);
         pm.registerEvents(new ItemUseListener(this), this);
         pm.registerEvents(new GuiListener(this), this);
+        pm.registerEvents(new DamageListener(this), this);
+        pm.registerEvents(new ChatListener(this), this);
 
         AdminCommands admin = new AdminCommands(this);
         bind("nolife", admin);
@@ -63,6 +70,7 @@ public final class NoLifePlugin extends JavaPlugin {
         bind("nlreload", admin);
         bind("lives", admin);
         bind("nlrecipes", admin);
+        bind("godmode", admin);
 
         PluginCommand bountyCommand = getCommand("bounty");
         if (bountyCommand != null) {
@@ -134,6 +142,10 @@ public final class NoLifePlugin extends JavaPlugin {
 
     public BountyManager bounties() {
         return bountyManager;
+    }
+
+    public GodModeManager godMode() {
+        return godModeManager;
     }
 
     public ResourcePackService resourcePacks() {

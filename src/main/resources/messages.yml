@@ -101,3 +101,9 @@ bounty-none-active: "&eThere are no active bounties right now."
 bounty-list-header: "&6&lActive Bounties&7:"
 # %player% %amount%
 bounty-list-line: "&8- &f%player%&7: &e%amount%&7 Life Gems"
+
+# ----------------------------------------------------------------------------
+#  God mode  -  /godmode
+# ----------------------------------------------------------------------------
+godmode-enabled: "&a&lGOD MODE &aenabled. &7You now take no damage."
+godmode-disabled: "&c&lGOD MODE &cdisabled. &7You can take damage again."

@@ -51,6 +51,22 @@ items:
     custom-model-data: 1000002
 
 # ----------------------------------------------------------------------------
+# Chat. Opped players get a red ADMIN tag in front of their chat messages.
+# This only affects the chat line - never the tab list or the name-tag.
+# ----------------------------------------------------------------------------
+chat:
+  admin-prefix-enabled: true
+  admin-prefix: "&c&lADMIN "
+
+# ----------------------------------------------------------------------------
+# Sounds.
+# ----------------------------------------------------------------------------
+sounds:
+  # Played to everyone when a player is eliminated (death-banned).
+  # Any vanilla sound key; leave empty ("") to disable.
+  eliminate: "minecraft:block.beacon.activate"
+
+# ----------------------------------------------------------------------------
 # Bounties.
 #   Players stake Life Gems on a target with  /bounty add <player> <amount>.
 #   Whoever kills that target collects every staked gem.

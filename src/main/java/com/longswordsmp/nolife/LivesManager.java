@@ -244,6 +244,7 @@ public class LivesManager {
         // was already eliminated (e.g. /setlives 0 on an already-out player).
         if (announce && !already) {
             broadcast(cfg.msg("broadcast.death", "%player%", name));
+            playEliminateSound();
         }
         data.save();
 
@@ -360,5 +361,16 @@ public class LivesManager {
             player.sendMessage(component);
         }
         Bukkit.getConsoleSender().sendMessage(component);
+    }
+
+    /** Play the configured elimination cue to every online player. */
+    private void playEliminateSound() {
+        String sound = cfg.eliminateSound();
+        if (sound == null || sound.isBlank()) {
+            return;
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
+        }
     }
 }
