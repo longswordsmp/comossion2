@@ -4,7 +4,9 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.longswordsmp.nolife.bounty.BountyManager;
 import com.longswordsmp.nolife.commands.AdminCommands;
+import com.longswordsmp.nolife.commands.BountyCommand;
 import com.longswordsmp.nolife.config.PluginConfig;
 import com.longswordsmp.nolife.data.DataStore;
 import com.longswordsmp.nolife.gui.GuiListener;
@@ -25,6 +27,7 @@ public final class NoLifePlugin extends JavaPlugin {
     private DataStore dataStore;
     private LivesManager livesManager;
     private ItemManager itemManager;
+    private BountyManager bountyManager;
     private ResourcePackService resourcePackService;
 
     @Override
@@ -39,6 +42,9 @@ public final class NoLifePlugin extends JavaPlugin {
 
         this.itemManager = new ItemManager(this, config);
         this.itemManager.registerRecipes();
+
+        this.bountyManager = new BountyManager(this);
+        this.bountyManager.load();
 
         this.resourcePackService = new ResourcePackService(this, config);
 
@@ -58,6 +64,15 @@ public final class NoLifePlugin extends JavaPlugin {
         bind("lives", admin);
         bind("nlrecipes", admin);
 
+        PluginCommand bountyCommand = getCommand("bounty");
+        if (bountyCommand != null) {
+            BountyCommand bounty = new BountyCommand(this);
+            bountyCommand.setExecutor(bounty);
+            bountyCommand.setTabCompleter(bounty);
+        } else {
+            getLogger().warning("Command 'bounty' is missing from plugin.yml.");
+        }
+
         // Handle players already online (e.g. after /reload).
         livesManager.refreshOnlineDisplays();
 
@@ -68,6 +83,9 @@ public final class NoLifePlugin extends JavaPlugin {
     public void onDisable() {
         if (dataStore != null) {
             dataStore.save();
+        }
+        if (bountyManager != null) {
+            bountyManager.save();
         }
     }
 
@@ -112,6 +130,10 @@ public final class NoLifePlugin extends JavaPlugin {
 
     public ItemManager items() {
         return itemManager;
+    }
+
+    public BountyManager bounties() {
+        return bountyManager;
     }
 
     public ResourcePackService resourcePacks() {

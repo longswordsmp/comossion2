@@ -68,3 +68,36 @@ lives-text: "&f%player%&7 has &e%lives%&7/&e%max%&7 lives."
 
 # %version%
 reloaded: "&aNoLife configuration reloaded. &7(resource pack v%version%)"
+
+# ----------------------------------------------------------------------------
+#  Bounties  -  /bounty add|remove|list
+# ----------------------------------------------------------------------------
+usage-bounty: "&cUsage: &7/bounty add <player> <amount> &8| &7/bounty remove <player> &8| &7/bounty list"
+bounty-disabled: "&cThe bounty system is currently disabled."
+bounty-self: "&cYou can't place a bounty on yourself."
+# %player%
+bounty-target-eliminated: "&c%player% is already eliminated - there's no one left to hunt."
+# %amount% %have%
+bounty-need-gems: "&cYou need &e%amount%&c Life Gems for that, but you only have &e%have%&c."
+# %min%
+bounty-min-amount: "&cA bounty must be at least &e%min%&c Life Gem(s)."
+# %max% %player%
+bounty-max-per-player: "&cYou can't stake more than &e%max%&c Life Gems on &f%player%&c."
+# %amount% %player% %total%
+bounty-placed: "&aYou staked &e%amount%&a Life Gem(s) on &f%player%&a. Total bounty: &e%total%&a."
+# %placer% %player% %total%
+bounty-placed-broadcast: "&6%placer% &7placed a bounty on &c%player%&7! Reward: &e%total%&7 Life Gems. &8Kill them to claim it!"
+# %player%
+bounty-none: "&eThere is no bounty on &f%player%&e."
+# %player%
+bounty-no-contribution: "&eYou haven't staked any Life Gems on &f%player%&e."
+# %amount% %player%
+bounty-removed: "&aYou reclaimed &e%amount%&a Life Gem(s) from the bounty on &f%player%&a."
+# %killer% %player% %amount%
+bounty-claimed: "&6%killer% &7killed &c%player%&7 and claimed the &e%amount%&7 Life Gem bounty!"
+# %amount% %player%
+bounty-claimed-self: "&aBounty claimed! You collected &e%amount%&a Life Gem(s) for killing &f%player%&a."
+bounty-none-active: "&eThere are no active bounties right now."
+bounty-list-header: "&6&lActive Bounties&7:"
+# %player% %amount%
+bounty-list-line: "&8- &f%player%&7: &e%amount%&7 Life Gems"

@@ -270,6 +270,33 @@ public class PluginConfig {
         return config.getBoolean("resource-pack.send-on-join", true);
     }
 
+    // ---- bounties ---------------------------------------------------------
+
+    public boolean bountyEnabled() {
+        return config.getBoolean("bounty.enabled", true);
+    }
+
+    public int bountyMinAmount() {
+        return Math.max(1, config.getInt("bounty.min-amount", 1));
+    }
+
+    /** Cap on the total gems one player may have staked on a target (0 = none). */
+    public int bountyMaxPerPlayer() {
+        return Math.max(0, config.getInt("bounty.max-per-player", 0));
+    }
+
+    public boolean bountyBroadcastPlaced() {
+        return config.getBoolean("bounty.broadcast-placed", true);
+    }
+
+    public boolean bountyBroadcastClaimed() {
+        return config.getBoolean("bounty.broadcast-claimed", true);
+    }
+
+    public boolean bountyAllowSelf() {
+        return config.getBoolean("bounty.allow-self", false);
+    }
+
     // ---- messages (messages.yml) -----------------------------------------
 
     /** Raw (un-parsed) message string for a dotted key in messages.yml. */

@@ -225,4 +225,58 @@ public class ItemManager {
             inv.setItem(slot, item);
         }
     }
+
+    // ---- Life Gem bulk operations (used by the bounty system) -------------
+
+    /** Count how many Life Gems a player is carrying (summing every stack). */
+    public int countLifeGems(Player player) {
+        PlayerInventory inv = player.getInventory();
+        int total = 0;
+        for (int i = 0; i < inv.getSize(); i++) {
+            ItemStack item = inv.getItem(i);
+            if (isLifeGem(item)) {
+                total += item.getAmount();
+            }
+        }
+        return total;
+    }
+
+    /**
+     * Remove up to {@code amount} Life Gems from a player's inventory,
+     * returning the number actually removed. Callers that must not partially
+     * remove should check {@link #countLifeGems(Player)} first.
+     */
+    public int removeLifeGems(Player player, int amount) {
+        if (amount <= 0) {
+            return 0;
+        }
+        PlayerInventory inv = player.getInventory();
+        int remaining = amount;
+        for (int i = 0; i < inv.getSize() && remaining > 0; i++) {
+            ItemStack item = inv.getItem(i);
+            if (!isLifeGem(item)) {
+                continue;
+            }
+            int stack = item.getAmount();
+            if (stack <= remaining) {
+                inv.setItem(i, null);
+                remaining -= stack;
+            } else {
+                item.setAmount(stack - remaining);
+                inv.setItem(i, item);
+                remaining = 0;
+            }
+        }
+        return amount - remaining;
+    }
+
+    /** Give a player {@code amount} Life Gems in 64-stacks, dropping overflow. */
+    public void giveLifeGems(Player player, int amount) {
+        int remaining = amount;
+        while (remaining > 0) {
+            int stack = Math.min(64, remaining);
+            give(player, createLifeGem(stack));
+            remaining -= stack;
+        }
+    }
 }

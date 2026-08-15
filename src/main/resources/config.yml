@@ -51,6 +51,26 @@ items:
     custom-model-data: 1000002
 
 # ----------------------------------------------------------------------------
+# Bounties.
+#   Players stake Life Gems on a target with  /bounty add <player> <amount>.
+#   Whoever kills that target collects every staked gem.
+#   A placer can reclaim their own stake any time with  /bounty remove <player>.
+# ----------------------------------------------------------------------------
+bounty:
+  # Master switch for the whole /bounty system.
+  enabled: true
+  # Fewest Life Gems a single /bounty add may stake.
+  min-amount: 1
+  # Most Life Gems one player may have staked on a single target (0 = no limit).
+  max-per-player: 0
+  # Announce to everyone when a bounty is placed or increased.
+  broadcast-placed: true
+  # Announce to everyone when a bounty is claimed (the target is killed).
+  broadcast-claimed: true
+  # Allow a player to place a bounty on themselves.
+  allow-self: false
+
+# ----------------------------------------------------------------------------
 # GUI titles
 # ----------------------------------------------------------------------------
 gui:

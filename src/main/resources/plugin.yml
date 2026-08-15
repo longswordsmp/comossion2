@@ -36,6 +36,10 @@ commands:
     description: Show the Book of Life and Life Gem recipes.
     usage: /nlrecipes
     aliases: [nlrecipe]
+  bounty:
+    description: Place, reclaim or view Life Gem bounties on players.
+    usage: /bounty <add|remove|list> [player] [amount]
+    aliases: [bounties]
 
 permissions:
   nolife.admin:
@@ -52,4 +56,7 @@ permissions:
     default: true
   nolife.recipes:
     description: Allows using /nlrecipes to view the crafting recipes.
+    default: true
+  nolife.bounty:
+    description: Allows placing, reclaiming and viewing bounties with /bounty.
     default: true

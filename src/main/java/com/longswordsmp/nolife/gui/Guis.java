@@ -21,6 +21,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import net.kyori.adventure.text.Component;
 
 import com.longswordsmp.nolife.NoLifePlugin;
+import com.longswordsmp.nolife.bounty.Bounty;
 import com.longswordsmp.nolife.config.RecipeConfig;
 import com.longswordsmp.nolife.data.PlayerData;
 import com.longswordsmp.nolife.util.Text;
@@ -545,6 +546,52 @@ public final class Guis {
             }
         }
         menu.open(viewer);
+    }
+
+    // =====================================================================
+    //  Bounties (player-facing) - view active bounties, reclaim your own
+    // =====================================================================
+
+    public static void openBounties(NoLifePlugin plugin, Player viewer, int page) {
+        List<Bounty> list = plugin.bounties().allSorted();
+        if (list.isEmpty()) {
+            viewer.sendMessage(plugin.config().msg("bounty-none-active"));
+            return;
+        }
+        UUID me = viewer.getUniqueId();
+        List<ItemStack> icons = new ArrayList<>();
+        List<MenuClick> clicks = new ArrayList<>();
+        for (Bounty b : list) {
+            UUID target = b.target();
+            String name = b.targetName();
+            int total = b.total();
+            int mine = b.contribution(me);
+
+            List<String> lore = new ArrayList<>();
+            lore.add("&7Reward: &e" + total + " &7Life Gem" + (total == 1 ? "" : "s"));
+            lore.add("&7Backers: &f" + b.contributions().size());
+            if (mine > 0) {
+                lore.add("&7Your stake: &e" + mine);
+                lore.add("&cRight-click to reclaim your gems");
+            }
+            icons.add(head(target, name, "&c&l" + name, lore));
+            clicks.add((v, e) -> {
+                if (!e.isRightClick()) {
+                    return; // left-click is view-only
+                }
+                int refunded = plugin.bounties().removeContribution(target, v.getUniqueId());
+                if (refunded <= 0) {
+                    v.sendMessage(plugin.config().msg("bounty-no-contribution", "%player%", name));
+                } else {
+                    plugin.items().giveLifeGems(v, refunded);
+                    v.sendMessage(plugin.config().msg("bounty-removed",
+                            "%amount%", String.valueOf(refunded), "%player%", name));
+                }
+                open(plugin, () -> openBounties(plugin, v, page));
+            });
+        }
+        openPaginated(plugin, viewer, "&8Active Bounties", page, icons, clicks, null,
+                (p) -> openBounties(plugin, viewer, p));
     }
 
     // =====================================================================
