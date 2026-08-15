@@ -1,0 +1,27 @@
+name: WitherStrikeCannon
+version: '${project.version}'
+main: com.comossion.witherstrike.WitherStrikeCannonPlugin
+api-version: '1.21'
+description: Fishing rod that calls down an orbital barrage of wither skulls.
+folia-supported: false
+
+commands:
+  witherstrikecannon:
+    description: Receive a Wither Strike Cannon.
+    usage: /witherstrikecannon [give <player> | reload]
+    permission: witherstrikecannon.command
+    aliases: [wsc, witherstrike, withercannon]
+
+permissions:
+  witherstrikecannon.command:
+    description: Use the /witherstrikecannon command to get a cannon.
+    default: op
+  witherstrikecannon.use:
+    description: Fire a Wither Strike Cannon that you are holding.
+    default: true
+  witherstrikecannon.give:
+    description: Give a cannon to another player.
+    default: op
+  witherstrikecannon.reload:
+    description: Reload the plugin configuration.
+    default: op
