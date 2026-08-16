@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------
 #  WitherStrikeCannon
-#  Right click the rod, and a 120 block wide orbital barrage lands on
-#  whatever you were looking at.
+#  Right click the rod, and a 90 block wide orbital barrage lands on
+#  whatever you were looking at - wide and shallow, not a bottomless pit.
 #
 #  NOTE: if you are upgrading from an older version, DELETE this file
 #  and restart so the new defaults are written.
@@ -30,9 +30,9 @@ strike:
   # Hard ceiling, so a typo in skull-count cannot take the server down.
   max-skull-count: 5000
 
-  # Radius in blocks of the circle the skulls rain into. 60 = a 120 block
+  # Radius in blocks of the circle the skulls rain into. 45 = a 90 block
   # wide strike zone.
-  spread: 60.0
+  spread: 45.0
 
   # How far each skull's impact point wanders from the column it fell
   # down. Small values keep the rain near vertical - large values make
@@ -45,7 +45,7 @@ strike:
   # Skulls are released across this many waves, one wave per
   # wave-delay-ticks, instead of all at once. 2000 entities in a single
   # tick is an instant TPS crater.
-  waves: 120
+  waves: 100
   wave-delay-ticks: 1
 
   # Blue (charged) wither skulls instead of black ones.
@@ -61,7 +61,7 @@ strike:
   invulnerable: true
 
   # Seconds between shots, per player. 0 disables the cooldown.
-  cooldown-seconds: 45
+  cooldown-seconds: 30
 
   # Cancel damage that a player's own barrage would deal to them.
   protect-shooter: true
@@ -86,20 +86,29 @@ explosion:
   #           and skulls get flung into the air by earlier impacts.
   mode: CUSTOM
 
-  # CUSTOM mode: radius in blocks carved out around each impact. Combined
-  # with spread 60 this digs roughly a 120 wide, 32 deep crater and removes
-  # about 440,000 blocks per shot.
-  blast-radius: 16.0
+  # CUSTOM mode: the shape carved out around each impact. The blast is a
+  # squashed bowl, not a sphere, so the strike scars the surface instead of
+  # drilling a pit:
+  #   blast-radius - how wide each impact reaches
+  #   blast-depth  - how far DOWN it digs. This is the dial to turn if
+  #                  craters are too deep. 4 takes the top few layers off;
+  #                  16 would gut everything down to the caves.
+  #   blast-height - how far UP it reaches, so buildings and trees standing
+  #                  on the surface are still erased. Costs almost nothing,
+  #                  since anything above ground is mostly air.
+  blast-radius: 10.0
+  blast-depth: 4.0
+  blast-height: 12.0
 
   # CUSTOM mode: how many blocks may be removed per tick. This is the
   # single most important performance dial - lower it if the server
   # stutters while a crater is forming, raise it for faster destruction.
-  blocks-per-tick: 6000
+  blocks-per-tick: 5000
 
   # CUSTOM mode: absolute cap on blocks removed by one strike. The queue
-  # costs roughly 56 bytes per block, so 1,000,000 is about 56 MB of heap
+  # costs roughly 56 bytes per block, so 500,000 is about 28 MB of heap
   # while a strike is being carved. Raise it only if you raise the radii.
-  max-blocks-per-strike: 1000000
+  max-blocks-per-strike: 500000
 
   # CUSTOM mode: remove water and lava too. Leaving this false is much
   # kinder to TPS, since carved liquids immediately start flowing back.
@@ -107,8 +116,8 @@ explosion:
 
   # CUSTOM mode: damage dealt to every living thing in the strike zone,
   # repeated damage-pulses times while the barrage lands.
-  damage-per-pulse: 15.0
-  damage-pulses: 16
+  damage-per-pulse: 10.0
+  damage-pulses: 10
   damage-pulse-interval-ticks: 10
 
   # VANILLA mode only.

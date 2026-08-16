@@ -191,20 +191,27 @@ public final class StrikeService {
             }
         }
 
-        queueCrater(world, impact, config.blastRadius());
+        queueCrater(world, impact, config.blastRadius(), config.blastDepth(), config.blastHeight());
     }
 
     /**
-     * Queues a sphere of blocks for removal. Impacts are quantised onto a grid first, so a
-     * barrage of 1500 skulls only carves a few hundred spheres instead of 1500 overlapping ones.
+     * Queues a flattened bowl of blocks for removal: {@code radius} wide, only {@code depth}
+     * blocks below the impact so craters stay shallow, and {@code height} blocks above it so
+     * anything built on the surface still gets erased.
+     *
+     * <p>Impacts are quantised onto a grid first, so a barrage of 2000 skulls carves a few
+     * dozen bowls instead of 2000 overlapping ones.
      */
-    private void queueCrater(World world, Location impact, double radius) {
+    private void queueCrater(World world, Location impact, double radius, double depth, double height) {
         int centreX = impact.getBlockX();
         int centreY = impact.getBlockY();
         int centreZ = impact.getBlockZ();
 
-        int grid = Math.max(1, (int) (radius * 0.75D));
-        if (!carvedCentres.add(pack(Math.floorDiv(centreX, grid), Math.floorDiv(centreY, grid), Math.floorDiv(centreZ, grid)))) {
+        // A coarse grid horizontally, a fine one vertically, so hills and cliffs still get
+        // carved properly instead of being skipped as "already done".
+        int gridH = Math.max(1, (int) (radius * 0.75D));
+        int gridV = Math.max(1, (int) (depth * 0.75D));
+        if (!carvedCentres.add(pack(Math.floorDiv(centreX, gridH), Math.floorDiv(centreY, gridV), Math.floorDiv(centreZ, gridH)))) {
             return;
         }
 
@@ -215,18 +222,27 @@ public final class StrikeService {
 
         LinkedHashSet<Long> queue = carveQueues.computeIfAbsent(world, ignored -> new LinkedHashSet<>());
         int reach = (int) Math.ceil(radius);
-        double radiusSquared = radius * radius;
+        int down = (int) Math.ceil(depth);
+        int up = (int) Math.ceil(height);
         int minY = world.getMinHeight();
         int maxY = world.getMaxHeight() - 1;
 
         for (int dx = -reach; dx <= reach; dx++) {
-            for (int dy = -reach; dy <= reach; dy++) {
-                int y = centreY + dy;
-                if (y < minY || y > maxY) {
+            double nx = dx / radius;
+            for (int dz = -reach; dz <= reach; dz++) {
+                double nz = dz / radius;
+                double horizontal = nx * nx + nz * nz;
+                if (horizontal > 1.0D) {
                     continue;
                 }
-                for (int dz = -reach; dz <= reach; dz++) {
-                    if (dx * dx + dy * dy + dz * dz > radiusSquared) {
+                for (int dy = -down; dy <= up; dy++) {
+                    // Squashed ellipsoid: shallow going down, taller going up.
+                    double ny = dy >= 0 ? dy / height : dy / depth;
+                    if (horizontal + ny * ny > 1.0D) {
+                        continue;
+                    }
+                    int y = centreY + dy;
+                    if (y < minY || y > maxY) {
                         continue;
                     }
                     if (queuedBlocks >= max) {

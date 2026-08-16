@@ -2,13 +2,14 @@
 
 A Paper 1.21.11 plugin. `/witherstrikecannon` hands you a fishing rod; right click it and
 **2000 wither skulls** fall out of the sky onto whatever you were looking at, up to 300 blocks
-away, leaving a crater roughly **120 blocks wide and 32 deep — about 440,000 blocks removed**.
+away, scarring a **90 block wide** area — wide and shallow, only **4 blocks deep**.
 
-- **2000 wither skulls** per shot, raining into a 60 block radius circle
+- **2000 wither skulls** per shot, raining into a 45 block radius circle
 - **Normal wither head speed** — skulls use the vanilla wither skull acceleration, not a
   custom velocity
-- **~300x the destruction** of a vanilla-explosion approach, at a fraction of the CPU cost
-- Released in 120 waves over 6 seconds, so it lands as a sustained bombardment instead of
+- **Shallow by design** — the blast is a squashed bowl, not a sphere, so a huge barrage
+  scars the surface instead of drilling a bottomless pit
+- Released in 100 waves over 5 seconds, so it lands as a sustained bombardment instead of
   one server-killing tick
 
 ## Build
@@ -22,7 +23,7 @@ mvn clean package     # -> target/WitherStrikeCannon-1.0.0.jar
 Drop the jar in `plugins/` and restart.
 
 > **Upgrading?** Delete `plugins/WitherStrikeCannon/config.yml` and restart, otherwise your
-> old (much smaller) values are kept and none of the new options exist.
+> old values are kept and the new `blast-depth` / `blast-height` options won't exist.
 
 ## Commands
 
@@ -48,8 +49,8 @@ crater itself instead.
 
 That's also what makes the destruction affordable. 2000 vanilla explosions is 2000 separate
 ray-cast passes; carving is one deduplicated set of block removals, drained at a fixed budget
-per tick. Impacts are snapped to a grid first, so 2000 skulls become ~90 sphere carves rather
-than 2000 overlapping ones.
+per tick. Impacts are snapped to a grid first, so 2000 skulls become a few dozen bowl carves
+rather than 2000 overlapping ones.
 
 **Caveat:** because it doesn't go through the explosion event, CUSTOM mode does **not** respect
 region protection plugins like WorldGuard. If you need those honoured, set
@@ -59,33 +60,42 @@ comes back.
 ## Targeting
 
 **RAYTRACE (default).** Right click; the strike lands on the block you're looking at, up to
-`max-distance` (300) blocks away. This is the default because a 120 block wide crater is not
-something you want to be standing in.
+`max-distance` (300) blocks away. This is the default because a 90 block wide strike zone is
+not something you want to be standing in.
 
 **BOBBER.** `targeting.mode: BOBBER` restores the original feel — cast the rod, and the strike
 lands where the bobber lands. Fishing rod range is ~30 blocks, so with the current radius
-**you will be inside your own crater**. Damage is cancelled for the shooter, but you'll still
-be falling into a very deep hole.
+**you will be inside your own crater**. Damage is cancelled for the shooter, and at 4 blocks
+deep it's survivable now, but you'll still be standing in a hole.
 
-## Scaling it up or down
+## Crater shape
 
-The three dials that matter, and what they actually produce (measured by simulating the
-carve geometry):
+Each impact carves a **squashed bowl**, not a sphere, which is what keeps a 2000 skull
+barrage from turning into a pit:
 
-| skulls | `spread` | `blast-radius` | blocks destroyed | crater | carve time |
+- `blast-radius` (10) — how wide each impact reaches
+- `blast-depth` (4) — how far **down** it digs. **This is the dial to turn if craters are
+  too deep.**
+- `blast-height` (12) — how far **up** it reaches, so buildings and trees on the surface
+  are still erased. Costs almost nothing, because everything above ground is mostly air.
+
+Measured by simulating the carve geometry against flat ground:
+
+| `spread` | `blast-radius` | `blast-depth` | blocks dug | crater | carve time |
 | --- | --- | --- | --- | --- | --- |
-| 1500 | 40 | 12 | 162,000 | 80 wide, 24 deep | 2.0 s |
-| **2000** | **60** | **16** | **441,000** | **120 wide, 32 deep** | **3.7 s** |
-| 2500 | 60 | 18 | 555,000 | 120 wide, 36 deep | 4.6 s |
-| 3000 | 80 | 20 | 1,037,000 | 160 wide, 40 deep | 6.5 s |
+| 45 | 10 | 2 | 17,700 | 90 wide, 2 deep | 1.1 s |
+| **45** | **10** | **4** | **34,300** | **90 wide, 4 deep** | **1.2 s** |
+| 45 | 10 | 8 | 66,600 | 90 wide, 8 deep | 1.6 s |
+| 60 | 16 | 16 | 228,500 | 120 wide, 16 deep | 3.7 s |
 
-That last row is the "delete the whole base" setting. If you use it, also raise
-`explosion.max-blocks-per-strike` (the queue costs ~56 bytes per block, so a million-block
-crater is ~56 MB of heap while it's being carved) and expect the carve to take a few seconds.
+That last row is the previous version's setting — the one that dug too far down. Note the
+skull count doesn't change any of this: you can keep 2000 skulls in the sky and still only
+take the top two layers off, because how it *looks* and how much it *destroys* are
+separate dials.
 
 ## Performance dials
 
-`explosion.blocks-per-tick` (default 6000) is the single most important one — it caps how much
+`explosion.blocks-per-tick` (default 5000) is the single most important one — it caps how much
 terrain work happens per tick, so a giant crater takes longer to form rather than freezing the
 server. Lower it if you see stutter, raise it for faster destruction.
 
@@ -101,8 +111,8 @@ Others worth knowing:
 ## Damage
 
 Instead of 2000 individual explosion damage calculations, everything living in the strike zone
-takes `explosion.damage-per-pulse` (15) damage every `damage-pulse-interval-ticks` (10) for
-`damage-pulses` (16) pulses — 240 damage total across the barrage. The shooter is skipped when
+takes `explosion.damage-per-pulse` (10) damage every `damage-pulse-interval-ticks` (10) for
+`damage-pulses` (10) pulses — 100 damage total across the barrage. The shooter is skipped when
 `strike.protect-shooter` is on. Skulls still deal their normal direct-hit damage and wither
 effect on top of that.
 

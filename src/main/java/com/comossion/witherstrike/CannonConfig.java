@@ -38,27 +38,29 @@ public final class CannonConfig {
     private int hookTimeoutTicks = 120;
 
     private int skullCount = 2000;
-    private double spread = 60.0D;
+    private double spread = 45.0D;
     private double impactJitter = 3.0D;
     private double height = 140.0D;
-    private int waves = 120;
+    private int waves = 100;
     private int waveDelayTicks = 1;
     private boolean charged = false;
     private double speedMultiplier = 1.0D;
     private boolean invulnerable = true;
-    private int cooldownSeconds = 45;
+    private int cooldownSeconds = 30;
     private boolean protectShooter = true;
     private boolean effects = true;
     private int impactEffectEvery = 3;
     private Set<String> disabledWorlds = new HashSet<>();
 
     private ExplosionMode explosionMode = ExplosionMode.CUSTOM;
-    private double blastRadius = 16.0D;
-    private int blocksPerTick = 6000;
-    private int maxBlocksPerStrike = 1_000_000;
+    private double blastRadius = 10.0D;
+    private double blastDepth = 4.0D;
+    private double blastHeight = 12.0D;
+    private int blocksPerTick = 5000;
+    private int maxBlocksPerStrike = 500_000;
     private boolean carveLiquids = false;
-    private double damagePerPulse = 15.0D;
-    private int damagePulses = 16;
+    private double damagePerPulse = 10.0D;
+    private int damagePulses = 10;
     private int damagePulseIntervalTicks = 10;
     private boolean blockDamage = true;
     private double explosionPower = 4.0D;
@@ -87,15 +89,15 @@ public final class CannonConfig {
 
         int maxSkulls = (int) clamp(config.getInt("strike.max-skull-count", 5000), 1, 20_000);
         skullCount = (int) clamp(config.getInt("strike.skull-count", 2000), 1, maxSkulls);
-        spread = clamp(config.getDouble("strike.spread", 60.0D), 0.0D, 256.0D);
+        spread = clamp(config.getDouble("strike.spread", 45.0D), 0.0D, 256.0D);
         impactJitter = clamp(config.getDouble("strike.impact-jitter", 3.0D), 0.0D, 64.0D);
         height = clamp(config.getDouble("strike.height", 140.0D), 1.0D, 320.0D);
-        waves = (int) clamp(config.getInt("strike.waves", 120), 1, skullCount);
+        waves = (int) clamp(config.getInt("strike.waves", 100), 1, skullCount);
         waveDelayTicks = (int) clamp(config.getInt("strike.wave-delay-ticks", 1), 0, 100);
         charged = config.getBoolean("strike.charged", false);
         speedMultiplier = clamp(config.getDouble("strike.speed-multiplier", 1.0D), 0.05D, 20.0D);
         invulnerable = config.getBoolean("strike.invulnerable", true);
-        cooldownSeconds = (int) clamp(config.getInt("strike.cooldown-seconds", 45), 0, 3600);
+        cooldownSeconds = (int) clamp(config.getInt("strike.cooldown-seconds", 30), 0, 3600);
         protectShooter = config.getBoolean("strike.protect-shooter", true);
         effects = config.getBoolean("strike.effects", true);
         impactEffectEvery = (int) clamp(config.getInt("strike.impact-effect-every", 3), 1, 1000);
@@ -115,12 +117,14 @@ public final class CannonConfig {
             plugin.getLogger().warning("Unknown explosion.mode '" + explosion + "', falling back to CUSTOM.");
             explosionMode = ExplosionMode.CUSTOM;
         }
-        blastRadius = clamp(config.getDouble("explosion.blast-radius", 16.0D), 1.0D, 64.0D);
-        blocksPerTick = (int) clamp(config.getInt("explosion.blocks-per-tick", 6000), 100, 200_000);
-        maxBlocksPerStrike = (int) clamp(config.getInt("explosion.max-blocks-per-strike", 1_000_000), 1000, 20_000_000);
+        blastRadius = clamp(config.getDouble("explosion.blast-radius", 10.0D), 1.0D, 64.0D);
+        blastDepth = clamp(config.getDouble("explosion.blast-depth", 4.0D), 0.0D, 64.0D);
+        blastHeight = clamp(config.getDouble("explosion.blast-height", 12.0D), 0.0D, 64.0D);
+        blocksPerTick = (int) clamp(config.getInt("explosion.blocks-per-tick", 5000), 100, 200_000);
+        maxBlocksPerStrike = (int) clamp(config.getInt("explosion.max-blocks-per-strike", 500_000), 1000, 20_000_000);
         carveLiquids = config.getBoolean("explosion.carve-liquids", false);
-        damagePerPulse = clamp(config.getDouble("explosion.damage-per-pulse", 15.0D), 0.0D, 2048.0D);
-        damagePulses = (int) clamp(config.getInt("explosion.damage-pulses", 16), 0, 200);
+        damagePerPulse = clamp(config.getDouble("explosion.damage-per-pulse", 10.0D), 0.0D, 2048.0D);
+        damagePulses = (int) clamp(config.getInt("explosion.damage-pulses", 10), 0, 200);
         damagePulseIntervalTicks = (int) clamp(config.getInt("explosion.damage-pulse-interval-ticks", 10), 1, 200);
         blockDamage = config.getBoolean("explosion.block-damage", true);
         explosionPower = clamp(config.getDouble("explosion.power", 4.0D), -1.0D, 50.0D);
@@ -202,8 +206,19 @@ public final class CannonConfig {
         return explosionMode;
     }
 
+    /** Horizontal radius of each impact. */
     public double blastRadius() {
         return blastRadius;
+    }
+
+    /** How far below the impact point the carve reaches - keep this small or craters get bottomless. */
+    public double blastDepth() {
+        return blastDepth;
+    }
+
+    /** How far above the impact point the carve reaches, so structures still get flattened. */
+    public double blastHeight() {
+        return blastHeight;
     }
 
     public int blocksPerTick() {
