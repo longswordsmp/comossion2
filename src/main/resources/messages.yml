@@ -107,3 +107,28 @@ bounty-list-line: "&8- &f%player%&7: &e%amount%&7 Life Gems"
 # ----------------------------------------------------------------------------
 godmode-enabled: "&a&lGOD MODE &aenabled. &7You now take no damage."
 godmode-disabled: "&c&lGOD MODE &cdisabled. &7You can take damage again."
+
+# ----------------------------------------------------------------------------
+#  Bounty event  -  /bountyevent start|stop
+# ----------------------------------------------------------------------------
+usage-bountyevent: "&cUsage: &7/bountyevent <start|stop>"
+bountyevent-already-active: "&eA bounty event is already running."
+bountyevent-not-active: "&eThere is no bounty event running right now."
+bountyevent-started: "&6&l⚔ BOUNTY EVENT &7has &a&lSTARTED&7! Stake Life Gems with &f/bounty add <player> <amount>&7."
+bountyevent-stopped: "&6&l⚔ BOUNTY EVENT &7has &c&lENDED&7! All open bounties have been refunded to their placers."
+# %amount%
+bountyevent-refund: "&aThe bounty event ended - &e%amount%&a Life Gem(s) were returned to you."
+
+# ----------------------------------------------------------------------------
+#  Withdraw  -  /withdraw <1|2>
+# ----------------------------------------------------------------------------
+usage-withdraw: "&cUsage: &7/withdraw <1|2>"
+withdraw-disabled: "&cWithdrawing lives is currently disabled."
+withdraw-eliminated: "&cYou have no lives to withdraw."
+withdraw-infinite: "&cYou can't withdraw lives while on infinite (admin) lives."
+# %max%
+withdraw-too-many: "&cYou can withdraw at most &e%max%&c life/lives at once."
+# %min% %lives%
+withdraw-keep: "&cYou must keep at least &e%min%&c life. You only have &e%lives%&c."
+# %amount% %lives%
+withdraw-done: "&aWithdrew &e%amount%&a life(s) as Life Gems. &7You now have &e%lives%&7 lives."

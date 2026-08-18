@@ -81,6 +81,8 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
                 return recipes(sender);
             case "godmode":
                 return godmode(sender, args);
+            case "withdraw":
+                return withdraw(sender, args);
             default:
                 return false;
         }
@@ -366,6 +368,66 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    // ---- /withdraw --------------------------------------------------------
+
+    private boolean withdraw(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nolife.withdraw")) {
+            sender.sendMessage(cfg().msg("no-permission"));
+            return true;
+        }
+        if (!cfg().withdrawEnabled()) {
+            sender.sendMessage(cfg().msg("withdraw-disabled"));
+            return true;
+        }
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(cfg().msg("players-only"));
+            return true;
+        }
+        UUID id = player.getUniqueId();
+        if (plugin.lives().isEliminated(id)) {
+            sender.sendMessage(cfg().msg("withdraw-eliminated"));
+            return true;
+        }
+        if (plugin.lives().isInfinite(id)) {
+            sender.sendMessage(cfg().msg("withdraw-infinite"));
+            return true;
+        }
+
+        int amount = 1;
+        if (args.length >= 1) {
+            try {
+                amount = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                sender.sendMessage(cfg().msg("invalid-number", "%amount%", args[0]));
+                return true;
+            }
+        }
+        if (amount < 1) {
+            sender.sendMessage(cfg().msg("usage-withdraw"));
+            return true;
+        }
+        int maxPer = cfg().withdrawMax();
+        if (amount > maxPer) {
+            sender.sendMessage(cfg().msg("withdraw-too-many", "%max%", String.valueOf(maxPer)));
+            return true;
+        }
+
+        int minKept = cfg().withdrawMinKept();
+        int lives = plugin.lives().getLivesOrDefault(id);
+        if (lives - amount < minKept) {
+            sender.sendMessage(cfg().msg("withdraw-keep",
+                    "%min%", String.valueOf(minKept), "%lives%", String.valueOf(lives)));
+            return true;
+        }
+
+        int applied = plugin.lives().setLives(id, lives - amount, player.getName());
+        plugin.items().giveLifeGems(player, amount);
+        player.getWorld().playSound(player.getLocation(), "minecraft:entity.experience_orb.pickup", 1.0f, 1.0f);
+        player.sendMessage(cfg().msg("withdraw-done",
+                "%amount%", String.valueOf(amount), "%lives%", String.valueOf(applied)));
+        return true;
+    }
+
     // ---- helpers ----------------------------------------------------------
 
     private UUID resolve(String name) {
@@ -433,6 +495,17 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
         if (name.equals("godmode")) {
             if (args.length == 1 && sender.hasPermission("nolife.godmode")) {
                 return prefixed(Arrays.asList("on", "off"), args[0]);
+            }
+            return Collections.emptyList();
+        }
+
+        if (name.equals("withdraw")) {
+            if (args.length == 1 && sender.hasPermission("nolife.withdraw")) {
+                List<String> options = new ArrayList<>();
+                for (int i = 1; i <= plugin.config().withdrawMax(); i++) {
+                    options.add(String.valueOf(i));
+                }
+                return prefixed(options, args[0]);
             }
             return Collections.emptyList();
         }

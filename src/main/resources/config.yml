@@ -87,6 +87,17 @@ bounty:
   allow-self: false
 
 # ----------------------------------------------------------------------------
+# Withdraw. Players convert their own lives back into Life Gems with
+#   /withdraw <amount>  - e.g. to bank a life, trade it, or stake it on a bounty.
+# ----------------------------------------------------------------------------
+withdraw:
+  enabled: true
+  # Most lives a player may withdraw in one command.
+  max-per-command: 2
+  # A player can never withdraw below this many lives.
+  min-lives-kept: 1
+
+# ----------------------------------------------------------------------------
 # GUI titles
 # ----------------------------------------------------------------------------
 gui:

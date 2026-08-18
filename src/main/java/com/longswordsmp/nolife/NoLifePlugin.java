@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.longswordsmp.nolife.bounty.BountyManager;
 import com.longswordsmp.nolife.commands.AdminCommands;
 import com.longswordsmp.nolife.commands.BountyCommand;
+import com.longswordsmp.nolife.commands.BountyEventCommand;
 import com.longswordsmp.nolife.config.PluginConfig;
 import com.longswordsmp.nolife.data.DataStore;
 import com.longswordsmp.nolife.gui.GuiListener;
@@ -71,6 +72,7 @@ public final class NoLifePlugin extends JavaPlugin {
         bind("lives", admin);
         bind("nlrecipes", admin);
         bind("godmode", admin);
+        bind("withdraw", admin);
 
         PluginCommand bountyCommand = getCommand("bounty");
         if (bountyCommand != null) {
@@ -79,6 +81,15 @@ public final class NoLifePlugin extends JavaPlugin {
             bountyCommand.setTabCompleter(bounty);
         } else {
             getLogger().warning("Command 'bounty' is missing from plugin.yml.");
+        }
+
+        PluginCommand bountyEventCommand = getCommand("bountyevent");
+        if (bountyEventCommand != null) {
+            BountyEventCommand bountyEvent = new BountyEventCommand(this);
+            bountyEventCommand.setExecutor(bountyEvent);
+            bountyEventCommand.setTabCompleter(bountyEvent);
+        } else {
+            getLogger().warning("Command 'bountyevent' is missing from plugin.yml.");
         }
 
         // Handle players already online (e.g. after /reload).

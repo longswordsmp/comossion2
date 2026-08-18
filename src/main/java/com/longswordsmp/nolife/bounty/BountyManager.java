@@ -28,6 +28,11 @@ public class BountyManager {
     private final File file;
     private final Map<UUID, Bounty> bounties = new HashMap<>();
 
+    /** Whether a server-wide bounty event is currently running. */
+    private boolean eventActive = false;
+    /** Gems owed to placers who were offline when a bounty event ended. */
+    private final Map<UUID, Integer> pendingRefunds = new HashMap<>();
+
     public BountyManager(JavaPlugin plugin) {
         this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "bounties.yml");
@@ -37,49 +42,68 @@ public class BountyManager {
 
     public void load() {
         bounties.clear();
+        pendingRefunds.clear();
+        eventActive = false;
         if (!file.exists()) {
             return;
         }
         FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+
+        eventActive = yaml.getBoolean("event-active", false);
+
         ConfigurationSection root = yaml.getConfigurationSection("bounties");
-        if (root == null) {
-            return;
-        }
-        for (String key : root.getKeys(false)) {
-            UUID target = parseUuid(key);
-            if (target == null) {
-                continue;
-            }
-            ConfigurationSection s = root.getConfigurationSection(key);
-            if (s == null) {
-                continue;
-            }
-            Bounty bounty = new Bounty(target, s.getString("name", key));
-            ConfigurationSection placers = s.getConfigurationSection("placers");
-            if (placers != null) {
-                for (String pk : placers.getKeys(false)) {
-                    UUID placer = parseUuid(pk);
-                    if (placer == null) {
-                        continue;
-                    }
-                    ConfigurationSection ps = placers.getConfigurationSection(pk);
-                    if (ps == null) {
-                        continue;
-                    }
-                    int amount = ps.getInt("amount", 0);
-                    if (amount > 0) {
-                        bounty.add(placer, ps.getString("name", pk), amount);
+        if (root != null) {
+            for (String key : root.getKeys(false)) {
+                UUID target = parseUuid(key);
+                if (target == null) {
+                    continue;
+                }
+                ConfigurationSection s = root.getConfigurationSection(key);
+                if (s == null) {
+                    continue;
+                }
+                Bounty bounty = new Bounty(target, s.getString("name", key));
+                ConfigurationSection placers = s.getConfigurationSection("placers");
+                if (placers != null) {
+                    for (String pk : placers.getKeys(false)) {
+                        UUID placer = parseUuid(pk);
+                        if (placer == null) {
+                            continue;
+                        }
+                        ConfigurationSection ps = placers.getConfigurationSection(pk);
+                        if (ps == null) {
+                            continue;
+                        }
+                        int amount = ps.getInt("amount", 0);
+                        if (amount > 0) {
+                            bounty.add(placer, ps.getString("name", pk), amount);
+                        }
                     }
                 }
+                if (!bounty.isEmpty()) {
+                    bounties.put(target, bounty);
+                }
             }
-            if (!bounty.isEmpty()) {
-                bounties.put(target, bounty);
+        }
+
+        ConfigurationSection refunds = yaml.getConfigurationSection("pending-refunds");
+        if (refunds != null) {
+            for (String pk : refunds.getKeys(false)) {
+                UUID placer = parseUuid(pk);
+                if (placer == null) {
+                    continue;
+                }
+                int amount = refunds.getInt(pk, 0);
+                if (amount > 0) {
+                    pendingRefunds.put(placer, amount);
+                }
             }
         }
     }
 
     public void save() {
         FileConfiguration yaml = new YamlConfiguration();
+        yaml.set("event-active", eventActive);
         for (Bounty bounty : bounties.values()) {
             String base = "bounties." + bounty.target();
             yaml.set(base + ".name", bounty.targetName());
@@ -88,6 +112,9 @@ public class BountyManager {
                 yaml.set(pbase + ".name", bounty.placerName(entry.getKey()));
                 yaml.set(pbase + ".amount", entry.getValue());
             }
+        }
+        for (Map.Entry<UUID, Integer> entry : pendingRefunds.entrySet()) {
+            yaml.set("pending-refunds." + entry.getKey(), entry.getValue());
         }
         try {
             if (!plugin.getDataFolder().exists()) {
@@ -161,6 +188,53 @@ public class BountyManager {
         }
         save();
         return b.total();
+    }
+
+    // ---- bounty event -----------------------------------------------------
+
+    public boolean isEventActive() {
+        return eventActive;
+    }
+
+    public void setEventActive(boolean active) {
+        this.eventActive = active;
+        save();
+    }
+
+    /**
+     * Clear every active bounty and return the total gems owed back to each
+     * placer (aggregated across all bounties). Used when a bounty event ends.
+     */
+    public Map<UUID, Integer> clearAllAndComputeRefunds() {
+        Map<UUID, Integer> refunds = new HashMap<>();
+        for (Bounty bounty : bounties.values()) {
+            for (Map.Entry<UUID, Integer> entry : bounty.contributions().entrySet()) {
+                refunds.merge(entry.getKey(), entry.getValue(), Integer::sum);
+            }
+        }
+        bounties.clear();
+        save();
+        return refunds;
+    }
+
+    // ---- pending refunds (placer was offline when an event ended) ---------
+
+    public void addPendingRefund(UUID placer, int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        pendingRefunds.merge(placer, amount, Integer::sum);
+        save();
+    }
+
+    /** Remove and return a placer's queued refund (0 if none). */
+    public int takePendingRefund(UUID placer) {
+        Integer amount = pendingRefunds.remove(placer);
+        if (amount == null || amount <= 0) {
+            return 0;
+        }
+        save();
+        return amount;
     }
 
     private static UUID parseUuid(String raw) {

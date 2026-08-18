@@ -46,6 +46,13 @@ public class ConnectionListener implements Listener {
         plugin.lives().updateDisplay(player);
         plugin.lives().applyPendingRevive(player);
         plugin.resourcePacks().sendOnJoin(player);
+
+        // A bounty event ended while this player was offline: return their gems.
+        int refund = plugin.bounties().takePendingRefund(player.getUniqueId());
+        if (refund > 0) {
+            plugin.items().giveLifeGems(player, refund);
+            player.sendMessage(plugin.config().msg("bountyevent-refund", "%amount%", String.valueOf(refund)));
+        }
     }
 
     @EventHandler

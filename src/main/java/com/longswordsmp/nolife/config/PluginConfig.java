@@ -285,6 +285,22 @@ public class PluginConfig {
         return config.getString("sounds.eliminate", "minecraft:block.beacon.activate");
     }
 
+    // ---- withdraw ---------------------------------------------------------
+
+    public boolean withdrawEnabled() {
+        return config.getBoolean("withdraw.enabled", true);
+    }
+
+    /** Most lives a player may withdraw in a single /withdraw. */
+    public int withdrawMax() {
+        return Math.max(1, config.getInt("withdraw.max-per-command", 2));
+    }
+
+    /** A player can never withdraw below this many lives. */
+    public int withdrawMinKept() {
+        return Math.max(0, config.getInt("withdraw.min-lives-kept", 1));
+    }
+
     // ---- bounties ---------------------------------------------------------
 
     public boolean bountyEnabled() {
