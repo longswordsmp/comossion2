@@ -83,6 +83,8 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
                 return godmode(sender, args);
             case "withdraw":
                 return withdraw(sender, args);
+            case "naturaldeath":
+                return naturalDeath(sender, args);
             default:
                 return false;
         }
@@ -428,6 +430,32 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    // ---- /naturaldeath ----------------------------------------------------
+
+    private boolean naturalDeath(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nolife.naturaldeath")) {
+            sender.sendMessage(cfg().msg("no-permission"));
+            return true;
+        }
+        boolean allowed = plugin.data().isNaturalDeathsAllowed();
+        boolean newAllowed;
+        if (args.length >= 1) {
+            String a = args[0].toLowerCase(Locale.ROOT);
+            if (a.equals("on") || a.equals("enable") || a.equals("true") || a.equals("allow")) {
+                newAllowed = true;
+            } else if (a.equals("off") || a.equals("disable") || a.equals("false") || a.equals("block")) {
+                newAllowed = false;
+            } else {
+                newAllowed = !allowed;
+            }
+        } else {
+            newAllowed = !allowed;
+        }
+        plugin.data().setNaturalDeathsAllowed(newAllowed);
+        sender.sendMessage(cfg().msg(newAllowed ? "naturaldeath-on" : "naturaldeath-off"));
+        return true;
+    }
+
     // ---- helpers ----------------------------------------------------------
 
     private UUID resolve(String name) {
@@ -506,6 +534,13 @@ public class AdminCommands implements CommandExecutor, TabCompleter {
                     options.add(String.valueOf(i));
                 }
                 return prefixed(options, args[0]);
+            }
+            return Collections.emptyList();
+        }
+
+        if (name.equals("naturaldeath")) {
+            if (args.length == 1 && sender.hasPermission("nolife.naturaldeath")) {
+                return prefixed(Arrays.asList("on", "off"), args[0]);
             }
             return Collections.emptyList();
         }

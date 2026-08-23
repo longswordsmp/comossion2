@@ -28,6 +28,9 @@ public class DataStore {
     private final Map<UUID, PlayerData> players = new HashMap<>();
     private final Map<UUID, PendingRevive> pending = new HashMap<>();
 
+    /** Global toggle: whether players can die to natural (non-player) causes. */
+    private boolean naturalDeathsAllowed = true;
+
     public DataStore(JavaPlugin plugin) {
         this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "data.yml");
@@ -36,11 +39,14 @@ public class DataStore {
     public void load() {
         players.clear();
         pending.clear();
+        naturalDeathsAllowed = true;
 
         if (!file.exists()) {
             return;
         }
         FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+
+        naturalDeathsAllowed = yaml.getBoolean("settings.natural-deaths-allowed", true);
 
         ConfigurationSection playerSection = yaml.getConfigurationSection("players");
         if (playerSection != null) {
@@ -87,6 +93,8 @@ public class DataStore {
     public void save() {
         FileConfiguration yaml = new YamlConfiguration();
 
+        yaml.set("settings.natural-deaths-allowed", naturalDeathsAllowed);
+
         for (PlayerData data : players.values()) {
             String base = "players." + data.getUuid();
             yaml.set(base + ".name", data.getName());
@@ -114,6 +122,17 @@ public class DataStore {
         } catch (IOException e) {
             plugin.getLogger().log(Level.SEVERE, "Could not save data.yml", e);
         }
+    }
+
+    // ---- global settings --------------------------------------------------
+
+    public boolean isNaturalDeathsAllowed() {
+        return naturalDeathsAllowed;
+    }
+
+    public void setNaturalDeathsAllowed(boolean allowed) {
+        this.naturalDeathsAllowed = allowed;
+        save();
     }
 
     // ---- player data ------------------------------------------------------

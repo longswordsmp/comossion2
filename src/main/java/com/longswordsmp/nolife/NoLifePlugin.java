@@ -73,6 +73,7 @@ public final class NoLifePlugin extends JavaPlugin {
         bind("nlrecipes", admin);
         bind("godmode", admin);
         bind("withdraw", admin);
+        bind("naturaldeath", admin);
 
         PluginCommand bountyCommand = getCommand("bounty");
         if (bountyCommand != null) {

@@ -52,6 +52,10 @@ commands:
     description: Convert some of your lives back into Life Gems.
     usage: /withdraw <1|2>
     aliases: [withdrawlife]
+  naturaldeath:
+    description: Toggle whether players can die to natural (non-player) causes.
+    usage: /naturaldeath <on|off>
+    aliases: [naturaldeaths, ndeath]
 
 permissions:
   nolife.admin:
@@ -81,3 +85,6 @@ permissions:
   nolife.withdraw:
     description: Allows converting lives into Life Gems with /withdraw.
     default: true
+  nolife.naturaldeath:
+    description: Allows toggling natural-death protection with /naturaldeath.
+    default: op

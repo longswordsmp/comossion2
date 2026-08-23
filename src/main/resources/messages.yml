@@ -132,3 +132,9 @@ withdraw-too-many: "&cYou can withdraw at most &e%max%&c life/lives at once."
 withdraw-keep: "&cYou must keep at least &e%min%&c life. You only have &e%lives%&c."
 # %amount% %lives%
 withdraw-done: "&aWithdrew &e%amount%&a life(s) as Life Gems. &7You now have &e%lives%&7 lives."
+
+# ----------------------------------------------------------------------------
+#  Natural-death protection  -  /naturaldeath on|off
+# ----------------------------------------------------------------------------
+naturaldeath-on: "&eNatural deaths are now &a&lON&e. Players can die to any cause (default)."
+naturaldeath-off: "&eNatural deaths are now &c&lOFF&e. Players can only be killed by other players."
